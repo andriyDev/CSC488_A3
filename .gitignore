@@ -1,7 +1,6 @@
 out/
 bin/
 lib/
-a2.iml
-alt_expr.txt
+*.iml
 .idea/
 dist/
