@@ -198,63 +198,66 @@ parameter
     ;
 
 expression
-    ::= conjunction                 // disjunctions, associate left-to-right
-    |   expression OR conjunction
+    ::= conjunction:c {: RESULT = c; :}                 // disjunctions, associate left-to-right
+    |   expression:e OR conjunction:c {: RESULT = new BoolExpn(BoolExpn.OP_OR, e, c); :}
     ;
 
 conjunction
-    ::= negation                    // conjunctions, associate left-to-right
-    |   conjunction AND negation
+    ::= negation:e {: RESULT = e; :}                    // conjunctions, associate left-to-right
+    |   conjunction:e AND negation:n {: RESULT = new BoolExpn(BoolExpn.OP_AND, e, n); :}
     ;
 
 negation
-    ::= compareExpn                 // negations
-    |   NOT negation
+    ::= compareExpn:e {: RESULT = e; :}                 // negations
+    |   NOT negation:e {: RESULT = new NotExpn(e); :}
     ;
 
 compareExpn
-    ::= arithExpn                                   // comparisons, do not associate
-    |   arithExpn EQUAL arithExpn
-    |   arithExpn NOT EQUAL arithExpn
-    |   arithExpn LESS arithExpn
-    |   arithExpn LESS EQUAL arithExpn
-    |   arithExpn GREATER arithExpn
-    |   arithExpn GREATER EQUAL arithExpn
+    ::= arithExpn:e {: RESULT = e; :}                                   // comparisons, do not associate
+    |   arithExpn:e1 EQUAL arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_EQUAL, e1, e2); :}
+    |   arithExpn:e1 NOT EQUAL arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_NOT_EQUAL, e1, e2); :}
+    |   arithExpn:e1 LESS arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS, e1, e2); :}
+    |   arithExpn:e1 LESS EQUAL arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS_EQUAL, e1, e2); :}
+    |   arithExpn:e1 GREATER arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER, e1, e2); :}
+    |   arithExpn:e1 GREATER EQUAL arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER_EQUAL, e1, e2); :}
     ;
 
 arithExpn
-    ::= term                        // expressions, associate + , - left-to-right
-    |   arithExpn PLUS term
-    |   arithExpn MINUS term
+    ::= term:t {: RESULT = t; :}                        // expressions, associate + , - left-to-right
+    |   arithExpn:e PLUS term:t {: RESULT = new ArithExpn(ArithExpn.OP_PLUS, e, t); :}
+    |   arithExpn:e MINUS term:t {: RESULT = new ArithExpn(ArithExpn.OP_MINUS, e, t); :}
     ;
 
 term
-    ::= factor                      // terms, associate * , / left-to-right
-    |   term TIMES factor
-    |   term DIVIDE factor
+    ::= factor:f {: RESULT = f; :}                      // terms, associate * , / left-to-right
+    |   term:t TIMES factor:f {: RESULT = new ArithExpn(ArithExpn.OP_TIMES, t, f); :}
+    |   term:t DIVIDE factor:f {: RESULT = new ArithExpn(ArithExpn.OP_DIVIDE, t, f); :}
     ;
 
 factor
-    ::= primary                     // unary minus
-    |   MINUS factor
+    ::= primary:p {: RESULT = p; :}                     // unary minus
+    |   MINUS factor:f {: RESULT = new UnaryMinusExpn(f); :}
     ;
 
 primary
-    ::= constant                                                            // integer or boolean constant
-    |   variable                                                            // scalar, array variable or function call
-    |   IDENT L_PAREN arguments R_PAREN                                     // function call
-    |   L_PAREN expression R_PAREN                                          // parenthesized expression
-    |   L_PAREN expression QUESTION expression COLON expression R_PAREN     // conditional expression
+    ::= constant:c {: RESULT = c; :}                                        // integer or boolean constant
+    |   variable:v {: RESULT = v; :}                                        // scalar, array variable or function call
+    |   IDENT:i L_PAREN arguments:a R_PAREN                                 // function call
+            {: RESULT = new FunctionCallExpn(i, a); :}
+    |   L_PAREN expression:e R_PAREN {: RESULT = e; :}                      // parenthesized expression
+    |   L_PAREN expression:q QUESTION expression:t COLON expression:f R_PAREN     // conditional expression
+            {: RESULT = new CondtionalExpn(q, t, f); :}
     ;
 
 constant
-    ::= INTCONST                    // integer constant
-    |   TRUE                        // constant true
-    |   FALSE                       // constant false
+    ::= INTCONST:i {: RESULT = new IntConstExpn(i); :}                      // integer constant
+    |   TRUE {: RESULT = new BoolConstExpn(true); :}                        // constant true
+    |   FALSE {: RESULT = new BoolConstExpn(false); :}                      // constant false
     ;
 
 variable
-    ::= IDENT                                                               // scalar variable or function call
-    |   IDENT L_SQUARE expression R_SQUARE                                  // element of 1-dimensional array
-    |   IDENT L_SQUARE expression COMMA expression R_SQUARE                 // element of 2-dimensional array;
+    ::= IDENT:i {: RESULT = new IdentExpn(i); :}                            // scalar variable or function call
+    |   IDENT:arr L_SQUARE expression:i1 R_SQUARE {: RESULT = new SubsExpn(arr, i1); :} // element of 1-dimensional array
+    |   IDENT:arr L_SQUARE expression:i1 COMMA expression:i2 R_SQUARE                 // element of 2-dimensional array;
+            {: RESULT = new SubsExpn(arr, i1, i2); :}
     ;
