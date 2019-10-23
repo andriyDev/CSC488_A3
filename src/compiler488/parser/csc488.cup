@@ -4,6 +4,11 @@
 
 package compiler488.parser;
 
+import compiler488.ast.*;
+import compiler488.ast.expn.*;
+import compiler488.ast.decl.*;
+import compiler488.ast.stmt.*;
+import compiler488.ast.type.*;
 // TODO: You can add Java import statements here as necessary
 
 /*
@@ -48,11 +53,14 @@ terminal String     TEXTCONST;
 nonterminal	program,	statement,	declaration,	scope	;
 nonterminal	statements,	declarations,	matchedStatement, unmatchedStatement ;
 nonterminal	variablenames,		output			;
-nonterminal	type,  	arguments,	parameters,	variable	;
-nonterminal 	expression,	variablename 			;
+nonterminal	type,	parameters	;
+nonterminal ASTList<Expn> arguments;
+nonterminal Expn expression, variable ;
+nonterminal variablename ;
 nonterminal	inputs, outputs, bound , generalBound ;
-nonterminal	procedureCall, parameter, conjunction, negation, compareExpn ;
-nonterminal	arithExpn, term, factor, primary, constant ;
+nonterminal	procedureCall, parameter ;
+nonterminal Expn conjunction, negation, compareExpn;
+nonterminal	Expn arithExpn, term, factor, primary, constant ;
  
 
 /*
@@ -246,7 +254,7 @@ primary
             {: RESULT = new FunctionCallExpn(i, a); :}
     |   L_PAREN expression:e R_PAREN {: RESULT = e; :}                      // parenthesized expression
     |   L_PAREN expression:q QUESTION expression:t COLON expression:f R_PAREN     // conditional expression
-            {: RESULT = new CondtionalExpn(q, t, f); :}
+            {: RESULT = new ConditionalExpn(q, t, f); :}
     ;
 
 constant
