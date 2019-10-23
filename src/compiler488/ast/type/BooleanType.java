@@ -1,6 +1,8 @@
 package compiler488.ast.type;
 
 
+import compiler488.semantics.Semantics;
+
 /**
  * The type of things that may be true or false.
  */
@@ -10,4 +12,8 @@ public class BooleanType extends Type {
         return "boolean";
     }
 
+    @Override
+    public void performSemanticAnalysis(Semantics s) {
+        s.semanticAction(20, null);
+    }
 }
