@@ -1,6 +1,9 @@
 package compiler488.semantics;
 
 import java.io.*;
+
+import compiler488.ast.AST;
+import compiler488.ast.stmt.Program;
 import compiler488.symbol.SymbolTable;
 
 /** Implement semantic analysis for compiler 488 
@@ -15,11 +18,20 @@ public class Semantics {
 	public FileWriter Tracer;
 	public File f;
 
-     
+	private SymbolTable symbols;
      
      /** SemanticAnalyzer constructor */
 	public Semantics (){
 	
+	}
+
+	public boolean analyze(Program AST) {
+		Initialize();
+
+		AST.performSemanticAnalysis(this);
+
+		Finalize();
+		return true;
 	}
 
 	/**  semanticsInitialize - called once by the parser at the      */
@@ -27,8 +39,9 @@ public class Semantics {
 	void Initialize() {
 	
 	   /*   Initialize the symbol table             */
-	
-	   // Symbol.Initialize();
+
+		symbols = new SymbolTable();
+	    symbols.Initialize();
 	   
 	   /*********************************************/
 	   /*  Additional initialization code for the   */
@@ -43,7 +56,10 @@ public class Semantics {
 	void Finalize(){
 	
 	  /*  Finalize the symbol table                 */
-	
+
+		if(symbols != null) {
+			symbols.Finalize();
+		}
 	  // Symbol.Finalize();
 	  
 	   /*********************************************/
@@ -58,7 +74,7 @@ public class Semantics {
 	 *  Perform one semantic analysis action
          *  @param  actionNumber  semantic analysis action number
          */
-	void semanticAction( int actionNumber ) {
+	public void semanticAction( int actionNumber, AST target ) {
 
 	if( traceSemantics ){
 		if(traceFile.length() > 0 ){

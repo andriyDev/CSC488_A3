@@ -1,5 +1,7 @@
 package compiler488.ast;
 
+import compiler488.semantics.Semantics;
+
 /**
  * Base class implementation for the AST hierarchy.
  *
@@ -28,4 +30,6 @@ public abstract class BaseAST implements AST {
 	public void prettyPrint(PrettyPrinter p) {
 		p.print(toString());
 	}
+
+	public void performSemanticAnalysis(Semantics s) {}
 }

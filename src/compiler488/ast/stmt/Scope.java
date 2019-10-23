@@ -3,6 +3,7 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.decl.Declaration;
+import compiler488.semantics.Semantics;
 
 /**
  * Represents the declarations and statements of a scope construct.
@@ -43,5 +44,16 @@ public class Scope extends Stmt {
 			statements.prettyPrintBlock(p);
 		}
 		p.print(" } ");
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		s.semanticAction(6, null);
+		performStatementSemanticAnalysis(s);
+		s.semanticAction(7, null);
+	}
+
+	void performStatementSemanticAnalysis(Semantics s) {
+
 	}
 }

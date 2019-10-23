@@ -2,6 +2,7 @@ package compiler488.ast.stmt;
 
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.semantics.Semantics;
 
 /**
  * The command to return from a function.
@@ -41,6 +42,17 @@ public class ReturnStmt extends Stmt {
 		if (value != null) {
 			p.print(" with ");
 			value.prettyPrint(p);
+		}
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		if(value != null) {
+			s.semanticAction(51, null);
+			s.semanticAction(35, value);
+		}
+		else {
+			s.semanticAction(52, null);
 		}
 	}
 }

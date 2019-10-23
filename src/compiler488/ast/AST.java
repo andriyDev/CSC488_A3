@@ -1,5 +1,7 @@
 package compiler488.ast;
 
+import compiler488.semantics.Semantics;
+
 /**
  * Common interface for all Abstract Syntax Tree nodes.
  *
@@ -16,4 +18,6 @@ package compiler488.ast;
  */
 public interface AST extends PrettyPrintable {
 	public void prettyPrint(PrettyPrinter p);
+
+	public void performSemanticAnalysis(Semantics s);
 }

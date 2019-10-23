@@ -396,6 +396,8 @@ public class Main {
 			// or
 			//
 			// Semantics.doIt( programAST );
+			Semantics analyzer = new Semantics();
+			analyzer.analyze(programAST);
 		} catch (Exception e) {
 			System.err.println("Exception during Semantic Analysis");
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());

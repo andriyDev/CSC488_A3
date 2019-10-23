@@ -3,6 +3,7 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.semantics.Semantics;
 
 /**
  * Represents an if-then or an if-then-else construct.
@@ -59,5 +60,15 @@ public class IfStmt extends Stmt {
 		}
 
 		p.println("end");
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		condition.performSemanticAnalysis(s);
+		s.semanticAction(30, condition);
+		whenTrue.performSemanticAnalysis(s);
+		if (whenFalse != null) {
+			whenFalse.performSemanticAnalysis(s);
+		}
 	}
 }

@@ -3,6 +3,7 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.semantics.Semantics;
 
 /**
  * Represents a loop in which the exit condition is evaluated before each pass.
@@ -18,5 +19,12 @@ public class WhileDoStmt extends LoopingStmt {
 		expn.prettyPrint(p);
 		p.println(" do");
 		body.prettyPrintBlock(p);
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		expn.performSemanticAnalysis(s);
+		s.semanticAction(30, expn);
+		// TODO: body.performSemanticAnalysis(s);
 	}
 }

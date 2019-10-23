@@ -1,6 +1,7 @@
 package compiler488.ast.stmt;
 
 import compiler488.ast.expn.*;
+import compiler488.semantics.Semantics;
 
 /**
  * Represents the command to exit from a loop.
@@ -45,5 +46,19 @@ public class ExitStmt extends Stmt {
 
 	public void setLevel(Integer level) {
 		this.level = level;
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		if(expn != null) {
+			expn.performSemanticAnalysis(s);
+		}
+
+		s.semanticAction(50, null);
+		if(level != -1)
+		{
+			// Use this object to figure out if there are enough loops to leave.
+			s.semanticAction(53, this);
+		}
 	}
 }

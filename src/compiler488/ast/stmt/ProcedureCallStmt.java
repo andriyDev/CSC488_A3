@@ -3,6 +3,7 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.semantics.Semantics;
 
 /**
  * Represents calling a procedure.
@@ -48,6 +49,22 @@ public class ProcedureCallStmt extends Stmt {
 			p.print("(");
 			arguments.prettyPrintCommas(p);
 			p.print(")");
+		}
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		if(arguments.size() > 0) {
+			s.semanticAction(44, this);
+			for(Expn argument : arguments) {
+				argument.performSemanticAnalysis(s);
+				// These are reordered so as not to mess up the argument count
+				s.semanticAction(36, argument);
+				s.semanticAction(45, this);
+			}
+			s.semanticAction(43, this);
+		} else {
+			s.semanticAction(42, this);
 		}
 	}
 }
