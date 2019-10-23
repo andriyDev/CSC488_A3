@@ -59,13 +59,16 @@ public class ArrayDeclPart extends DeclarationPart {
 	/**
 	 * Calculates the number of values held in an array declared in this way.
 	 *
-	 * TODO: Add a correct computation of the size of this array.
-	 *
 	 * @return size of the array
 	 */
 	public int getSize() {
-		// FIXME: This is broken.
-		throw new UnsupportedOperationException();
+		int d1 = getUpperBoundary1() - getLowerBoundary1();
+		if(isTwoDimensional) {
+			int d2 = getUpperBoundary2() - getLowerBoundary2();
+			return d1 * d2;
+		} else {
+			return d1;
+		}
 	}
 
 	public Integer getLowerBoundary1() {
