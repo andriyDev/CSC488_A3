@@ -54,6 +54,12 @@ public class Scope extends Stmt {
 	}
 
 	void performStatementSemanticAnalysis(Semantics s) {
-
+		for(Declaration decl : declarations) {
+			decl.performSemanticAnalysis(s);
+		}
+		s.semanticAction(2, null);
+		for(Stmt stmt : statements) {
+			stmt.performSemanticAnalysis(s);
+		}
 	}
 }
