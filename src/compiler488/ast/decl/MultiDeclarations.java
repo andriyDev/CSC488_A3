@@ -3,6 +3,7 @@ package compiler488.ast.decl;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.type.Type;
+import compiler488.semantics.Semantics;
 
 /**
  * Holds the declaration of multiple elements.
@@ -25,5 +26,13 @@ public class MultiDeclarations extends Declaration {
 		p.print("var ");
 		elements.prettyPrintCommas(p);
 		p.print(" : " + type);
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		for(DeclarationPart part : elements) {
+			part.performSemanticAnalysis(s);
+		}
+		s.semanticAction(47, this);
 	}
 }

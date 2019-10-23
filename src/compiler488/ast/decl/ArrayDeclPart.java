@@ -1,6 +1,7 @@
 package compiler488.ast.decl;
 
 import compiler488.ast.PrettyPrinter;
+import compiler488.semantics.Semantics;
 
 /**
  * Holds the declaration part of an array.
@@ -102,5 +103,11 @@ public class ArrayDeclPart extends DeclarationPart {
 		}
 
 		p.print("]");
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		s.semanticAction(46, this);
+		s.semanticAction(19, this);
 	}
 }
