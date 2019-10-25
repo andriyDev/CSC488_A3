@@ -136,6 +136,7 @@ public class RoutineDecl extends Declaration {
 					s.semanticAction(16, this);
 				}
 				s.semanticAction(18, this);
+				body.performSemanticAnalysis(s);
 				s.semanticAction(9, null);
 				s.semanticAction(13, this);
 			}

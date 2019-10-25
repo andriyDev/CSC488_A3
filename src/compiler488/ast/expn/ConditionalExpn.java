@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.semantics.Semantics;
+
 /** Represents a conditional expression (i.e., x>0?3:4). */
 public class ConditionalExpn extends Expn {
 	private Expn condition; // Evaluate this to decide which value to yield.
@@ -43,5 +45,15 @@ public class ConditionalExpn extends Expn {
 
 	public void setTrueValue(Expn trueValue) {
 		this.trueValue = trueValue;
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		condition.performSemanticAnalysis(s);
+		s.semanticAction(30, condition);
+		trueValue.performSemanticAnalysis(s);
+		falseValue.performSemanticAnalysis(s);
+		s.semanticAction(33, this);
+		s.semanticAction(24, this);
 	}
 }

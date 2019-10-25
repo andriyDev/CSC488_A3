@@ -23,7 +23,9 @@ public class RepeatUntilStmt extends LoopingStmt {
 
 	@Override
 	public void performSemanticAnalysis(Semantics s) {
-		// TODO: body.performSemanticAnalysis(s);
+		for(Stmt stmt : body) {
+			stmt.performSemanticAnalysis(s);
+		}
 		expn.performSemanticAnalysis(s);
 		s.semanticAction(30, expn);
 	}

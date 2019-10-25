@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.Readable;
+import compiler488.semantics.Semantics;
 
 /**
  * References to an array element variable
@@ -57,5 +58,18 @@ public class SubsExpn extends Expn implements Readable {
 		}
 
 		p.print("]");
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		s.semanticAction(38, this);
+		subscript1.performSemanticAnalysis(s);
+		s.semanticAction(31, subscript1);
+		if(subscript2 != null) {
+			subscript2.performSemanticAnalysis(s);
+			s.semanticAction(31, subscript2);
+		}
+		s.semanticAction(27, this);
+		// TODO: Check whether the number of dimensions matches the array declaration.
 	}
 }

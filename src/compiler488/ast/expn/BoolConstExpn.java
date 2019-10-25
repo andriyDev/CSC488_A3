@@ -1,5 +1,7 @@
 package compiler488.ast.expn;
 
+import compiler488.semantics.Semantics;
+
 /**
  * Boolean literal constants.
  */
@@ -20,5 +22,10 @@ public class BoolConstExpn extends ConstExpn {
 	@Override
 	public String toString() {
 		return value ? "true" : "false";
+	}
+
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		s.semanticAction(20, this);
 	}
 }

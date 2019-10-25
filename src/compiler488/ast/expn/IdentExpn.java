@@ -1,6 +1,7 @@
 package compiler488.ast.expn;
 
 import compiler488.ast.Readable;
+import compiler488.semantics.Semantics;
 
 /**
  * References to a scalar variable or function call without parameters.
@@ -27,4 +28,8 @@ public class IdentExpn extends Expn implements Readable {
 		return ident;
 	}
 
+	@Override
+	public void performSemanticAnalysis(Semantics s) {
+		// TODO: Figure this out
+	}
 }

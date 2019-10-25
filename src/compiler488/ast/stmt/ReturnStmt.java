@@ -48,6 +48,7 @@ public class ReturnStmt extends Stmt {
 	@Override
 	public void performSemanticAnalysis(Semantics s) {
 		if(value != null) {
+			value.performSemanticAnalysis(s);
 			s.semanticAction(51, null);
 			s.semanticAction(35, value);
 		}
