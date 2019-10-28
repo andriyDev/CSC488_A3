@@ -104,7 +104,7 @@ public class Semantics {
 	 *  Perform one semantic analysis action
          *  @param  actionNumber  semantic analysis action number
          */
-	public void semanticAction( int actionNumber, AST target ) throws Exception {
+	public void semanticAction( int actionNumber, AST target ) {
 
 	if( traceSemantics ){
 		if(traceFile.length() > 0 ){
@@ -155,13 +155,13 @@ public class Semantics {
 	   return ;
 	}
 
-	private void handleSpecialActions(int actionNumber) throws Exception {
+	private void handleSpecialActions(int actionNumber) {
 		if(actionNumber == 55) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() + 1));
 		} else if(actionNumber == 56) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() - 1));
 		} else if(actionNumber == 57) {
-			throw new Exception("Variable is not a routine or a variable!");
+			throw new RuntimeException("Variable is not a routine or a variable!");
 		}
 	}
 
