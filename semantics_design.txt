@@ -1,0 +1,2 @@
+Added a semantic action to increment and decrement the current number of loops when entering a loop and exiting a loop.
+Added a semantic action to check whether a subscript has the same number of dimensions as the array definition.
