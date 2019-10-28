@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 import compiler488.ast.Readable;
 import compiler488.semantics.Semantics;
+import compiler488.symbol.Symbol;
 
 /**
  * References to a scalar variable or function call without parameters.
@@ -30,6 +31,15 @@ public class IdentExpn extends Expn implements Readable {
 
 	@Override
 	public void performSemanticAnalysis(Semantics s) {
-		// TODO: Figure this out
+		Symbol sym = s.getScopeSymbol(ident);
+		if(sym.type == Symbol.SymbolType.Scalar) {
+			s.semanticAction(37, this);
+		} else if(sym.type == Symbol.SymbolType.Routine) {
+			s.semanticAction(37, this);
+			s.semanticAction(42, this);
+			s.semanticAction(28, this);
+		} else {
+			s.semanticAction(57, this);
+		}
 	}
 }
