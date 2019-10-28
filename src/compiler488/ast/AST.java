@@ -19,5 +19,5 @@ import compiler488.semantics.Semantics;
 public interface AST extends PrettyPrintable {
 	public void prettyPrint(PrettyPrinter p);
 
-	public void performSemanticAnalysis(Semantics s);
+	public boolean performSemanticAnalysis(Semantics s);
 }

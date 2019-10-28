@@ -43,7 +43,9 @@ public class SymbolTable {
 		}
 
 		public void addSymbol(String name, Symbol sym) {
-		    assert !symbols.containsKey(name);
+			if(symbols.containsKey(name)) {
+				throw new RuntimeException("Symbol already exists in scope!");
+			}
 			symbols.put(name, sym);
 		}
 	}

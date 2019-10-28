@@ -31,5 +31,5 @@ public abstract class BaseAST implements AST {
 		p.print(toString());
 	}
 
-	public void performSemanticAnalysis(Semantics s) {}
+	public boolean performSemanticAnalysis(Semantics s) { return true; }
 }

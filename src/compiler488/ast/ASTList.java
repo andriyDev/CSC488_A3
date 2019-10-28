@@ -1,5 +1,7 @@
 package compiler488.ast;
 
+import compiler488.semantics.Semantics;
+
 import java.util.LinkedList;
 
 /**
@@ -66,6 +68,11 @@ public class ASTList<E extends AST> extends LinkedList<E> implements AST {
 	 */
 	public void prettyPrint(PrettyPrinter p) {
 		prettyPrintNewlines(p);
+	}
+
+	@Override
+	public boolean performSemanticAnalysis(Semantics s) {
+		return true;
 	}
 
 	/**

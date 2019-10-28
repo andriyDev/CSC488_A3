@@ -70,6 +70,7 @@ public class Semantics {
 	    scopes.push(new Pair<>(ScopeType.Program, symbols.globalScope));
 
 	    funcInfo = new Stack<>();
+	    funcInfo.push(new Pair<>(null, 0));
 
 	    partsAwaitingType = new ArrayList<>();
 	   
@@ -104,7 +105,7 @@ public class Semantics {
 	 *  Perform one semantic analysis action
          *  @param  actionNumber  semantic analysis action number
          */
-	public void semanticAction( int actionNumber, AST target ) {
+	public boolean semanticAction( int actionNumber, AST target ) {
 
 	if( traceSemantics ){
 		if(traceFile.length() > 0 ){
@@ -137,66 +138,113 @@ public class Semantics {
            /*  FEEL FREE TO ignore or replace this procedure            */
 	   /*************************************************************/
 
+	   boolean result = true;
+
 	   if(actionNumber == 2) {
 
 	   } else if(actionNumber < 10) {
-		   handleScopeActions(actionNumber, target);
+		   result = handleScopeActions(actionNumber, target);
 	   } else if(actionNumber < 20 || actionNumber == 46 || actionNumber == 47) {
-		   handleDeclActions(actionNumber, target);
+		   result = handleDeclActions(actionNumber, target);
 	   } else if(actionNumber >= 55) {
-		   handleSpecialActions(actionNumber);
+		   result = handleSpecialActions(actionNumber);
 	   } else if(actionNumber >= 50) {
-		   handleStatementActions(actionNumber, target);
+		   result = handleStatementActions(actionNumber, target);
 	   } else if(actionNumber >= 40 && actionNumber <= 45) {
-		   handleCallActions(actionNumber, target);
+		   result = handleCallActions(actionNumber, target);
 	   }
 
 	   System.out.println("Semantic Action: S" + actionNumber  );
-	   return ;
+	   return result;
 	}
 
-	private void handleSpecialActions(int actionNumber) {
+	private boolean handleSpecialActions(int actionNumber) {
+		if(funcInfo.size() == 0) {
+			throw new RuntimeException("No function info! Cannot modify looping");
+		}
+
 		if(actionNumber == 55) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() + 1));
+			return true;
 		} else if(actionNumber == 56) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() - 1));
+			if(funcInfo.peek().getValue() < 0) {
+				System.err.println("Cannot leave loop - not enough loops started");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 57) {
-			throw new RuntimeException("Variable is not a routine or a variable!");
+			System.err.println("Identifier is not a routine or a variable!");
+			return false;
 		}
+		// Invalid action
+		return false;
 	}
 
-	private void handleScopeActions(int actionNumber, AST target) {
+	private boolean handleScopeActions(int actionNumber, AST target) {
+		if(scopes.size() == 0) {
+			throw new RuntimeException("No scopes! Cannot perform any scope actions!");
+		}
+
+		// If the action is 1, 5, 7, 9, pop the scope.
 		if (actionNumber % 2 == 1) {
+			// If the scope is a function or procedure, we need to remove the loop number and associated symbol.
 			if(scopes.peek().getKey() == ScopeType.Function
 				|| scopes.peek().getKey() == ScopeType.Procedure) {
-				funcInfo.pop();
+				if(funcInfo.size() == 0) {
+					throw new RuntimeException("No funcInfo to pop!");
+				} else {
+					funcInfo.pop();
+				}
 			}
 			scopes.pop();
-			return;
+			return true;
 		}
 
 		SymbolTable.SymbolScope newScope = symbols.createNewScope(scopes.peek().getValue());
 		if(actionNumber == 4) {
 			scopes.push(new Pair<>(ScopeType.Function, newScope));
 			// Action 13 will handle adding to funcInfo
+			return true;
 		} else if (actionNumber == 6) {
 			scopes.push(new Pair<>(ScopeType.Normal, newScope));
+			return true;
 		} else if (actionNumber == 8) {
 			scopes.push(new Pair<>(ScopeType.Procedure, newScope));
 			// Action 13 will handle adding to funcInfo
+			return true;
+		} else {
+			return true;
 		}
 	}
 
-	private void handleDeclActions(int actionNumber, AST target) {
+	private boolean handleDeclActions(int actionNumber, AST target) {
+		if(scopes.size() == 0) {
+			throw new RuntimeException("No scopes!");
+		}
+
 		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
 		if(actionNumber == 15) {
 			ScalarDecl decl = (ScalarDecl)target;
-			currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType())));
+			try {
+				currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType())));
+				return true;
+			} catch (RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
 		} else if(actionNumber == 10) {
 			ScalarDeclPart part = (ScalarDeclPart)target;
 			Symbol s = new Symbol(null);
-			currentScope.addSymbol(part.getName(), s);
-			partsAwaitingType.add(s);
+			try {
+				currentScope.addSymbol(part.getName(), s);
+				partsAwaitingType.add(s);
+				return true;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
 		} else if(actionNumber == 11 || actionNumber == 12
 			|| actionNumber == 17 || actionNumber == 18) {
 			RoutineDecl decl = (RoutineDecl)target;
@@ -205,42 +253,89 @@ public class Semantics {
 				parameters.add(Symbol.DTFromAST(param.getType()));
 			}
 			lastRoutine = new Symbol(Symbol.DTFromAST(decl.getType()), parameters);
-			currentScope.addSymbol(decl.getName(), lastRoutine);
+			try {
+				currentScope.addSymbol(decl.getName(), lastRoutine);
+				return true;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				lastRoutine = null;
+				return false;
+			}
 		} else if(actionNumber == 13) {
 			funcInfo.push(new Pair<>(lastRoutine, 0));
+			if(lastRoutine == null) {
+				throw new RuntimeException("No Last Routine! This shouldn't be possible!");
+			}
+			return true;
 		} else if(actionNumber == 19) {
 			ArrayDeclPart part = (ArrayDeclPart)target;
 			Symbol.ArrayBounds bounds = new Symbol.ArrayBounds(part);
 			Symbol s = new Symbol(null, bounds);
-			currentScope.addSymbol(part.getName(), s);
-			partsAwaitingType.add(s);
+			try {
+				currentScope.addSymbol(part.getName(), s);
+				partsAwaitingType.add(s);
+				return true;
+			} catch (RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
 		} else if(actionNumber == 46) {
 			ArrayDeclPart part = (ArrayDeclPart)target;
-			assert part.getLowerBoundary1() <= part.getUpperBoundary1();
-			assert !part.getTwoDimensional() || part.getLowerBoundary2() <= part.getUpperBoundary2();
+			boolean result = part.getLowerBoundary1() <= part.getUpperBoundary1();
+			result &= (!part.getTwoDimensional() || part.getLowerBoundary2() <= part.getUpperBoundary2());
+			if(!result) {
+				System.err.println("Boundaries of array are invalid!");
+				return false;
+			}
+			return true;
 		} else if (actionNumber == 47) {
 			MultiDeclarations decl = (MultiDeclarations)target;
 			for(Symbol part : partsAwaitingType) {
 				part.resultantType = Symbol.DTFromAST(decl.getType());
 			}
 			partsAwaitingType.clear();
+			return true;
 		} else {
-			// Do nothing
+			// Do nothing, we say this is ok.
+			return true;
 		}
 	}
 
-	private void handleStatementActions(int actionNumber, AST target) {
-		assert funcInfo.size() > 0;
+	private boolean handleStatementActions(int actionNumber, AST target) {
+		if(funcInfo.size() == 0) {
+			throw new RuntimeException("No function info stored!");
+		}
 		if(actionNumber == 50) {
-			assert funcInfo.peek().getValue() > 0;
+			if(funcInfo.peek().getValue() <= 0) {
+				System.err.println("Cannot exit from loops, as we are not directly in a loop!");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 51) {
-			assert funcInfo.peek().getKey().resultantType != None;
+			if(funcInfo.peek().getKey() == null || funcInfo.peek().getKey().resultantType == None) {
+				System.err.println("This is not a function! Cannot return with result");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 52) {
-			assert funcInfo.peek().getKey().resultantType == None;
+			if(funcInfo.peek().getKey() == null || funcInfo.peek().getKey().resultantType != None) {
+				System.err.println("This is not a procedure! Cannot return with no result");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 53) {
 			ExitStmt exit = (ExitStmt)target;
-			assert 0 < exit.getLevel() && exit.getLevel() <= funcInfo.peek().getValue();
+			if(!(0 < exit.getLevel() && exit.getLevel() <= funcInfo.peek().getValue())) {
+				System.err.println("Invalid number of loop levels to exit provided!");
+				return false;
+			} else {
+				return true;
+			}
 		} else {
+			// TODO: This is wrong, redo
 			Scope s = (Scope) target;
 			Stmt retStmt = null;
 			for(Stmt stmt : s.getStatements()) {
@@ -250,10 +345,14 @@ public class Semantics {
 				}
 			}
 			assert retStmt != null;
+			return true;
 		}
 	}
 
-	private void handleCallActions(int actionNumber, AST target) {
+	private boolean handleCallActions(int actionNumber, AST target) {
+		if(scopes.size() == 0) {
+			throw new RuntimeException("No scopes to peek at!");
+		}
 		if(actionNumber == 40) {
 			Symbol sym;
 			if(target instanceof FunctionCallExpn) {
@@ -264,13 +363,27 @@ public class Semantics {
 				IdentExpn call = (IdentExpn)target;
 				sym = getScopeSymbol(call.getIdent());
 			}
-			assert sym.type == Symbol.SymbolType.Routine;
-			assert sym.resultantType != None;
+			if(sym == null) {
+				System.err.println("Function not found!");
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Routine || sym.resultantType == None) {
+				System.err.println("Symbol is not a function!");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 41) {
 			ProcedureCallStmt call = (ProcedureCallStmt)target;
 			Symbol sym = getScopeSymbol(call.getName());
-			assert sym.type == Symbol.SymbolType.Routine;
-			assert sym.resultantType == None;
+			if(sym == null) {
+				System.err.println("Procedure not found!");
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Routine || sym.resultantType != None) {
+				System.err.println("Symbol is not a procedure!");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 42) {
 			Symbol sym;
 			if(target instanceof IdentExpn) {
@@ -281,7 +394,18 @@ public class Semantics {
 				ProcedureCallStmt call = (ProcedureCallStmt)target;
 				sym = getScopeSymbol(call.getName());
 			}
-			assert sym.parameters != null && sym.parameters.size() == 0;
+			if(sym == null) {
+				System.err.println("Function/Procedure not found!");
+				return false;
+			} else if(sym.parameters == null) {
+				System.err.println("Symbol is not a function/procedure!");
+				return false;
+			} else if(sym.parameters.size() != 0) {
+				System.err.println("Function/procedure has parameters - cannot call without any parameters.");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 43) {
 			Symbol sym;
 			int providedCount;
@@ -295,7 +419,18 @@ public class Semantics {
 				sym = getScopeSymbol(call.getName());
 				providedCount = call.getArguments().size();
 			}
-			assert sym.parameters != null && sym.parameters.size() == providedCount;
+			if(sym == null) {
+				System.err.println("Function/Procedure not found!");
+				return false;
+			} else if(sym.parameters == null) {
+				System.err.println("Symbol is not a function/procedure!");
+				return false;
+			} else if(sym.parameters.size() != providedCount) {
+				System.err.println("Function/procedure has a different number of arguments than what was provided.");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 44) {
 			if(target instanceof FunctionCallExpn) {
 				FunctionCallExpn call = (FunctionCallExpn) target;
@@ -306,9 +441,17 @@ public class Semantics {
 				checkingCall = getScopeSymbol(call.getName());
 			}
 			callArg = 0;
+			if(checkingCall == null) {
+				System.err.println("Symbol not found for function/procedure to check.");
+				return false;
+			} else {
+				return true;
+			}
 		} else if(actionNumber == 45) {
 			callArg++;
+			return true;
 		}
+		return false;
 	}
 
 	public Symbol getScopeSymbol(String name) {
