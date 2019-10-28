@@ -31,6 +31,7 @@ public class ReadStmt extends Stmt {
 			if(element instanceof Expn) {
 				result &= element.performSemanticAnalysis(s);
 				result &= s.semanticAction(31, element);
+				result &= s.semanticAction(59, element);
 			}
 		}
 		return result;

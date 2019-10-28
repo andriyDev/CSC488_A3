@@ -163,6 +163,9 @@ public class Semantics {
 		if(funcInfo.size() == 0) {
 			throw new RuntimeException("No function info! Cannot modify looping");
 		}
+		if(scopes.size() == 0) {
+			throw new RuntimeException("No scopes!");
+		}
 
 		if(actionNumber == 55) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() + 1));
@@ -179,10 +182,8 @@ public class Semantics {
 			System.err.println("Identifier is not a routine or a variable!");
 			return false;
 		} else if(actionNumber == 58) {
+			// Does the subscript have the correct number of dimensions for the array.
 			SubsExpn subs = (SubsExpn)target;
-			if(scopes.size() == 0) {
-				throw new RuntimeException("No scopes!");
-			}
 			Symbol sym = getScopeSymbol(subs.getVariable());
 			if(sym == null) {
 				System.err.println("Array does not exist!");
@@ -195,6 +196,26 @@ public class Semantics {
 				return false;
 			} else {
 				return true;
+			}
+		} else if(actionNumber == 59) {
+			// Is the expression assignable? Either through := or read.
+			if(target instanceof SubsExpn) {
+				// The assignment is valid.
+				return true;
+			} else if(target instanceof IdentExpn) {
+				IdentExpn i = (IdentExpn) target;
+				Symbol sym = getScopeSymbol(i.getIdent());
+				if(sym == null) {
+					System.err.println("Symbol does not exist!");
+					return false;
+				} else if(sym.type != Symbol.SymbolType.Scalar) {
+					System.err.println("Cannot assign to function!");
+					return false;
+				} else {
+					return true;
+				}
+			} else {
+				return false;
 			}
 		}
 		// Invalid action
