@@ -1,16 +1,14 @@
 package compiler488.semantics;
 
 import java.io.*;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
 import compiler488.ast.AST;
 import compiler488.ast.decl.*;
-import compiler488.ast.stmt.ExitStmt;
-import compiler488.ast.stmt.LoopingStmt;
-import compiler488.ast.stmt.Program;
-import compiler488.ast.stmt.Scope;
+import compiler488.ast.stmt.*;
 import compiler488.ast.type.BooleanType;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
@@ -236,7 +234,14 @@ public class Semantics {
 			assert 0 < exit.getLevel() && exit.getLevel() <= funcInfo.peek().getValue();
 		} else {
 			Scope s = (Scope) target;
-
+			Stmt retStmt = null;
+			for(Stmt stmt : s.getStatements()) {
+				if(stmt instanceof ReturnStmt) {
+					retStmt = stmt;
+					break;
+				}
+			}
+			assert retStmt != null;
 		}
 	}
 }
