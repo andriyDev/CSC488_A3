@@ -25,13 +25,15 @@ public class WriteStmt extends Stmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		for(Printable element : outputs) {
 			if(element instanceof Expn) {
-				element.performSemanticAnalysis(s);
-				s.semanticAction(31, element);
+				result &= element.performSemanticAnalysis(s);
+				result &= s.semanticAction(31, element);
 			}
 		}
+		return result;
 	}
 
 	public ASTList<Printable> getOutputs() {

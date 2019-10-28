@@ -30,16 +30,18 @@ public class IdentExpn extends Expn implements Readable {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
 		Symbol sym = s.getScopeSymbol(ident);
 		if(sym.type == Symbol.SymbolType.Scalar) {
-			s.semanticAction(37, this);
+			result = s.semanticAction(37, this);
 		} else if(sym.type == Symbol.SymbolType.Routine) {
-			s.semanticAction(37, this);
-			s.semanticAction(42, this);
-			s.semanticAction(28, this);
+			result = s.semanticAction(37, this);
+			result &= s.semanticAction(42, this);
+			result &= s.semanticAction(28, this);
 		} else {
-			s.semanticAction(57, this);
+			result = s.semanticAction(57, this);
 		}
+		return result;
 	}
 }

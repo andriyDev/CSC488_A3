@@ -49,16 +49,18 @@ public class ExitStmt extends Stmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		if(expn != null) {
-			expn.performSemanticAnalysis(s);
+			result = expn.performSemanticAnalysis(s);
 		}
 
-		s.semanticAction(50, null);
+		result &= s.semanticAction(50, null);
 		if(level != -1)
 		{
 			// Use this object to figure out if there are enough loops to leave.
-			s.semanticAction(53, this);
+			result &= s.semanticAction(53, this);
 		}
+		return result;
 	}
 }

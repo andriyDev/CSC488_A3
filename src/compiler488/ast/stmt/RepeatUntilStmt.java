@@ -22,13 +22,15 @@ public class RepeatUntilStmt extends LoopingStmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(55, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = s.semanticAction(55, this);
 		for(Stmt stmt : body) {
-			stmt.performSemanticAnalysis(s);
+			result &= stmt.performSemanticAnalysis(s);
 		}
-		s.semanticAction(56, this);
-		expn.performSemanticAnalysis(s);
-		s.semanticAction(30, expn);
+		result &= s.semanticAction(56, this);
+		result &= expn.performSemanticAnalysis(s);
+		result &= s.semanticAction(30, expn);
+		return result;
 	}
 }

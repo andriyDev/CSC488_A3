@@ -9,6 +9,7 @@ import compiler488.ast.AST;
 import compiler488.ast.decl.*;
 import compiler488.ast.expn.FunctionCallExpn;
 import compiler488.ast.expn.IdentExpn;
+import compiler488.ast.expn.SubsExpn;
 import compiler488.ast.stmt.*;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
@@ -51,10 +52,10 @@ public class Semantics {
 	public boolean analyze(Program AST) {
 		Initialize();
 
-		AST.performSemanticAnalysis(this);
+		boolean result = AST.performSemanticAnalysis(this);
 
 		Finalize();
-		return true;
+		return result;
 	}
 
 	/**  semanticsInitialize - called once by the parser at the      */
@@ -147,7 +148,7 @@ public class Semantics {
 	   } else if(actionNumber < 20 || actionNumber == 46 || actionNumber == 47) {
 		   result = handleDeclActions(actionNumber, target);
 	   } else if(actionNumber >= 55) {
-		   result = handleSpecialActions(actionNumber);
+		   result = handleSpecialActions(actionNumber, target);
 	   } else if(actionNumber >= 50) {
 		   result = handleStatementActions(actionNumber, target);
 	   } else if(actionNumber >= 40 && actionNumber <= 45) {
@@ -158,7 +159,7 @@ public class Semantics {
 	   return result;
 	}
 
-	private boolean handleSpecialActions(int actionNumber) {
+	private boolean handleSpecialActions(int actionNumber, AST target) {
 		if(funcInfo.size() == 0) {
 			throw new RuntimeException("No function info! Cannot modify looping");
 		}
@@ -177,6 +178,24 @@ public class Semantics {
 		} else if(actionNumber == 57) {
 			System.err.println("Identifier is not a routine or a variable!");
 			return false;
+		} else if(actionNumber == 58) {
+			SubsExpn subs = (SubsExpn)target;
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym = getScopeSymbol(subs.getVariable());
+			if(sym == null) {
+				System.err.println("Array does not exist!");
+				return false;
+			} else if(sym.bounds == null) {
+				System.err.println("Symbol is not an array!");
+				return false;
+			} else if(sym.bounds.is2d != (subs.numSubscripts() == 2)) {
+				System.err.println("Array subscript uses the wrong number of dimensions!");
+				return false;
+			} else {
+				return true;
+			}
 		}
 		// Invalid action
 		return false;

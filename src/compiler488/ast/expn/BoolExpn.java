@@ -19,11 +19,13 @@ public class BoolExpn extends BinaryExpn {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        left.performSemanticAnalysis(s);
-        s.semanticAction(30, left);
-        right.performSemanticAnalysis(s);
-        s.semanticAction(30, right);
-        s.semanticAction(20, this);
+    public boolean performSemanticAnalysis(Semantics s) {
+        boolean result;
+        result = left.performSemanticAnalysis(s);
+        result &= s.semanticAction(30, left);
+        result &= right.performSemanticAnalysis(s);
+        result &= s.semanticAction(30, right);
+        result &= s.semanticAction(20, this);
+        return result;
     }
 }

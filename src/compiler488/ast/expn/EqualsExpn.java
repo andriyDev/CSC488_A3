@@ -19,10 +19,12 @@ public class EqualsExpn extends BinaryExpn {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        left.performSemanticAnalysis(s);
-        right.performSemanticAnalysis(s);
-        s.semanticAction(32, this);
-        s.semanticAction(20, this);
+    public boolean performSemanticAnalysis(Semantics s) {
+        boolean result;
+        result = left.performSemanticAnalysis(s);
+        result &= right.performSemanticAnalysis(s);
+        result &= s.semanticAction(32, this);
+        result &= s.semanticAction(20, this);
+        return result;
     }
 }

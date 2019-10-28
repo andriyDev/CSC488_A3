@@ -18,8 +18,10 @@ public class ScalarDecl extends Declaration {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(10, this);
-		s.semanticAction(47, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = s.semanticAction(10, this);
+		result &= s.semanticAction(47, this);
+		return result;
 	}
 }

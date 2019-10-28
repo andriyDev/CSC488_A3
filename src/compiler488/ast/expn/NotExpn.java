@@ -12,9 +12,11 @@ public class NotExpn extends UnaryExpn {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        getOperand().performSemanticAnalysis(s);
-        s.semanticAction(30, getOperand());
-        s.semanticAction(20, this);
+    public boolean performSemanticAnalysis(Semantics s) {
+        boolean result;
+        result = getOperand().performSemanticAnalysis(s);
+        result &= s.semanticAction(30, getOperand());
+        result &= s.semanticAction(20, this);
+        return result;
     }
 }

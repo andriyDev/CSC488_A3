@@ -120,47 +120,49 @@ public class RoutineDecl extends Declaration {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		if(type == null) {
 			if(parameters.size() == 0) {
-				s.semanticAction(17, this);
-				s.semanticAction(8, this);
-				body.performStatementSemanticAnalysis(s);
-				s.semanticAction(9, this);
-				s.semanticAction(13, this);
+				result = s.semanticAction(17, this);
+				result &= s.semanticAction(8, this);
+				result &= body.performStatementSemanticAnalysis(s);
+				result &= s.semanticAction(9, this);
+				result &= s.semanticAction(13, this);
 			} else {
-				s.semanticAction(8, this);
-				s.semanticAction(14, this);
+				result = s.semanticAction(8, this);
+				result &= s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
-					s.semanticAction(15, decl);
-					s.semanticAction(16, this);
+					result &= s.semanticAction(15, decl);
+					result &= s.semanticAction(16, this);
 				}
-				s.semanticAction(18, this);
-				body.performStatementSemanticAnalysis(s);
-				s.semanticAction(9, this);
-				s.semanticAction(13, this);
+				result &= s.semanticAction(18, this);
+				result &= body.performStatementSemanticAnalysis(s);
+				result &= s.semanticAction(9, this);
+				result &= s.semanticAction(13, this);
 			}
 		} else {
 			if(parameters.size() == 0) {
-				s.semanticAction(11, this);
-				s.semanticAction(4, this);
-				body.performStatementSemanticAnalysis(s);
-				s.semanticAction(5, this);
-				s.semanticAction(54, body);
-				s.semanticAction(13, this);
+				result = s.semanticAction(11, this);
+				result &= s.semanticAction(4, this);
+				result &= body.performStatementSemanticAnalysis(s);
+				result &= s.semanticAction(5, this);
+				result &= s.semanticAction(54, body);
+				result &= s.semanticAction(13, this);
 			} else {
-				s.semanticAction(4, this);
-				s.semanticAction(14, this);
+				result = s.semanticAction(4, this);
+				result &= s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
-					s.semanticAction(15, decl);
-					s.semanticAction(16, this);
+					result &= s.semanticAction(15, decl);
+					result &= s.semanticAction(16, this);
 				}
-				s.semanticAction(12, this);
-				body.performStatementSemanticAnalysis(s);
-				s.semanticAction(5, this);
-				s.semanticAction(54, body);
-				s.semanticAction(13, this);
+				result &= s.semanticAction(12, this);
+				result &= body.performStatementSemanticAnalysis(s);
+				result &= s.semanticAction(5, this);
+				result &= s.semanticAction(54, body);
+				result &= s.semanticAction(13, this);
 			}
 		}
+		return result;
 	}
 }

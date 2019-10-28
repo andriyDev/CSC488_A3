@@ -63,12 +63,14 @@ public class IfStmt extends Stmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		condition.performSemanticAnalysis(s);
-		s.semanticAction(30, condition);
-		whenTrue.performSemanticAnalysis(s);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = condition.performSemanticAnalysis(s);
+		result &= s.semanticAction(30, condition);
+		result &= whenTrue.performSemanticAnalysis(s);
 		if (whenFalse != null) {
-			whenFalse.performSemanticAnalysis(s);
+			result &= whenFalse.performSemanticAnalysis(s);
 		}
+		return result;
 	}
 }

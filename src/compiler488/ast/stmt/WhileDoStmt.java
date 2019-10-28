@@ -22,13 +22,15 @@ public class WhileDoStmt extends LoopingStmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		expn.performSemanticAnalysis(s);
-		s.semanticAction(30, expn);
-		s.semanticAction(55, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = expn.performSemanticAnalysis(s);
+		result &= s.semanticAction(30, expn);
+		result &= s.semanticAction(55, this);
 		for(Stmt stmt : body) {
-			stmt.performSemanticAnalysis(s);
+			result &= stmt.performSemanticAnalysis(s);
 		}
-		s.semanticAction(56, this);
+		result &= s.semanticAction(56, this);
+		return result;
 	}
 }

@@ -25,7 +25,7 @@ public class BoolConstExpn extends ConstExpn {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(20, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		return s.semanticAction(20, this);
 	}
 }

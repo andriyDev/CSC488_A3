@@ -61,15 +61,17 @@ public class SubsExpn extends Expn implements Readable {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(38, this);
-		subscript1.performSemanticAnalysis(s);
-		s.semanticAction(31, subscript1);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = s.semanticAction(38, this);
+		result &= s.semanticAction(58, this);
+		result &= subscript1.performSemanticAnalysis(s);
+		result &= s.semanticAction(31, subscript1);
 		if(subscript2 != null) {
-			subscript2.performSemanticAnalysis(s);
-			s.semanticAction(31, subscript2);
+			result &= subscript2.performSemanticAnalysis(s);
+			result &= s.semanticAction(31, subscript2);
 		}
-		s.semanticAction(27, this);
-		// TODO: Check whether the number of dimensions matches the array declaration.
+		result &= s.semanticAction(27, this);
+		return result;
 	}
 }

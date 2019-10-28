@@ -47,19 +47,23 @@ public class Scope extends Stmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(6, this);
-		performStatementSemanticAnalysis(s);
-		s.semanticAction(7, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = s.semanticAction(6, this);
+		result &= performStatementSemanticAnalysis(s);
+		result &= s.semanticAction(7, this);
+		return result;
 	}
 
-	public void performStatementSemanticAnalysis(Semantics s) {
+	public boolean performStatementSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		for(Declaration decl : declarations) {
-			decl.performSemanticAnalysis(s);
+			result &= decl.performSemanticAnalysis(s);
 		}
-		s.semanticAction(2, this);
+		result &= s.semanticAction(2, this);
 		for(Stmt stmt : statements) {
-			stmt.performSemanticAnalysis(s);
+			result &= stmt.performSemanticAnalysis(s);
 		}
+		return result;
 	}
 }

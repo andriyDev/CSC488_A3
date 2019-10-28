@@ -19,7 +19,7 @@ public class ScalarDeclPart extends DeclarationPart {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(10, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		return s.semanticAction(10, this);
 	}
 }

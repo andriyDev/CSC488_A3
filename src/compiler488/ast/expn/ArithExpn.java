@@ -23,11 +23,13 @@ public class ArithExpn extends BinaryExpn {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        left.performSemanticAnalysis(s);
-        s.semanticAction(31, left);
-        right.performSemanticAnalysis(s);
-        s.semanticAction(31, right);
-        s.semanticAction(21, this);
+    public boolean performSemanticAnalysis(Semantics s) {
+        boolean result;
+        result = left.performSemanticAnalysis(s);
+        result &= s.semanticAction(31, left);
+        result &= right.performSemanticAnalysis(s);
+        result &= s.semanticAction(31, right);
+        result &= s.semanticAction(21, this);
+        return result;
     }
 }

@@ -12,7 +12,7 @@ public class IntegerType extends Type {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        s.semanticAction(21, null);
+    public boolean performSemanticAnalysis(Semantics s) {
+        return s.semanticAction(21, null);
     }
 }

@@ -40,18 +40,20 @@ public class FunctionCallExpn extends Expn {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		if(arguments.size() > 0) {
-			s.semanticAction(44, this);
+			result = s.semanticAction(44, this);
 			for(Expn ex : arguments) {
-				ex.performSemanticAnalysis(s);
-				s.semanticAction(36, ex);
-				s.semanticAction(45, this);
+				result &= ex.performSemanticAnalysis(s);
+				result &= s.semanticAction(36, ex);
+				result &= s.semanticAction(45, this);
 			}
-			s.semanticAction(43, this);
+			result &= s.semanticAction(43, this);
 		} else {
-			s.semanticAction(42, this);
+			result = s.semanticAction(42, this);
 		}
-		s.semanticAction(28, this);
+		result &= s.semanticAction(28, this);
+		return result;
 	}
 }

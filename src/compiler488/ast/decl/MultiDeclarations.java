@@ -29,10 +29,12 @@ public class MultiDeclarations extends Declaration {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result = true;
 		for(DeclarationPart part : elements) {
-			part.performSemanticAnalysis(s);
+			result &= part.performSemanticAnalysis(s);
 		}
-		s.semanticAction(47, this);
+		result &= s.semanticAction(47, this);
+		return result;
 	}
 }

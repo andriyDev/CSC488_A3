@@ -48,12 +48,14 @@ public class ConditionalExpn extends Expn {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		condition.performSemanticAnalysis(s);
-		s.semanticAction(30, condition);
-		trueValue.performSemanticAnalysis(s);
-		falseValue.performSemanticAnalysis(s);
-		s.semanticAction(33, this);
-		s.semanticAction(24, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = condition.performSemanticAnalysis(s);
+		result &= s.semanticAction(30, condition);
+		result &= trueValue.performSemanticAnalysis(s);
+		result &= falseValue.performSemanticAnalysis(s);
+		result &= s.semanticAction(33, this);
+		result &= s.semanticAction(24, this);
+		return result;
 	}
 }

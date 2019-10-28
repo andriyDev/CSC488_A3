@@ -110,8 +110,10 @@ public class ArrayDeclPart extends DeclarationPart {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(46, this);
-		s.semanticAction(19, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = s.semanticAction(46, this);
+		result &= s.semanticAction(19, this);
+		return result;
 	}
 }

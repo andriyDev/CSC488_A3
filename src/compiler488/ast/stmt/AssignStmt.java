@@ -37,9 +37,11 @@ public class AssignStmt extends Stmt {
 	}
 
 	@Override
-	public void performSemanticAnalysis(Semantics s) {
-		lval.performSemanticAnalysis(s);
-		rval.performSemanticAnalysis(s);
-		s.semanticAction(34, this);
+	public boolean performSemanticAnalysis(Semantics s) {
+		boolean result;
+		result = lval.performSemanticAnalysis(s);
+		result &= rval.performSemanticAnalysis(s);
+		result &= s.semanticAction(34, this);
+		return result;
 	}
 }

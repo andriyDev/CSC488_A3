@@ -11,9 +11,11 @@ public class UnaryMinusExpn extends UnaryExpn {
     }
 
     @Override
-    public void performSemanticAnalysis(Semantics s) {
-        getOperand().performSemanticAnalysis(s);
-        s.semanticAction(31, getOperand());
-        s.semanticAction(21, this);
+    public boolean performSemanticAnalysis(Semantics s) {
+        boolean result;
+        result = getOperand().performSemanticAnalysis(s);
+        result &= s.semanticAction(31, getOperand());
+        result &= s.semanticAction(21, this);
+        return result;
     }
 }
