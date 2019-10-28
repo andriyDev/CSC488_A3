@@ -1,9 +1,16 @@
 package compiler488.semantics;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 import compiler488.ast.AST;
+import compiler488.ast.decl.RoutineDecl;
+import compiler488.ast.decl.ScalarDecl;
 import compiler488.ast.stmt.Program;
+import compiler488.ast.type.BooleanType;
+import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
 
 /** Implement semantic analysis for compiler 488 
@@ -19,6 +26,8 @@ public class Semantics {
 	public File f;
 
 	private SymbolTable symbols;
+
+	private Stack<SymbolTable.SymbolScope> scopes;
      
      /** SemanticAnalyzer constructor */
 	public Semantics (){
@@ -42,6 +51,9 @@ public class Semantics {
 
 		symbols = new SymbolTable();
 	    symbols.Initialize();
+
+	    scopes = new Stack<>();
+	    scopes.push(symbols.globalScope);
 	   
 	   /*********************************************/
 	   /*  Additional initialization code for the   */
@@ -106,11 +118,40 @@ public class Semantics {
 	   /*                                                           */
            /*  FEEL FREE TO ignore or replace this procedure            */
 	   /*************************************************************/
-	                     
+
+	   if(actionNumber == 2) {
+
+	   } else if(actionNumber < 10) {
+		   handleScopeActions(actionNumber);
+	   } else if(actionNumber < 13) {
+		   handleDeclActions(actionNumber, target);
+	   }
+
 	   System.out.println("Semantic Action: S" + actionNumber  );
 	   return ;
 	}
 
-	// ADDITIONAL FUNCTIONS TO IMPLEMENT SEMANTIC ANALYSIS GO HERE
+	private void handleScopeActions(int actionNumber) {
+		if (actionNumber % 2 == 0) {
+			SymbolTable.SymbolScope currentScope = scopes.peek();
+			scopes.push(symbols.createNewScope(currentScope));
+		} else {
+			scopes.pop();
+		}
+	}
 
+	private void handleDeclActions(int actionNumber, AST target) {
+		SymbolTable.SymbolScope currentScope = scopes.peek();
+		if(actionNumber == 10) {
+			ScalarDecl decl = (ScalarDecl)target;
+			currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType())));
+		} else if(actionNumber == 11 || actionNumber == 12) {
+			RoutineDecl decl = (RoutineDecl)target;
+			List<Symbol.DataType> parameters = new ArrayList<>();
+			for(ScalarDecl param : decl.getParameters()) {
+				parameters.add(Symbol.DTFromAST(param.getType()));
+			}
+			currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType()), parameters));
+		}
+	}
 }
