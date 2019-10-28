@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Stack;
 
 import compiler488.ast.AST;
-import compiler488.ast.decl.RoutineDecl;
-import compiler488.ast.decl.ScalarDecl;
+import compiler488.ast.decl.*;
+import compiler488.ast.stmt.ExitStmt;
+import compiler488.ast.stmt.LoopingStmt;
 import compiler488.ast.stmt.Program;
+import compiler488.ast.stmt.Scope;
 import compiler488.ast.type.BooleanType;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
+import javafx.util.Pair;
 
 /** Implement semantic analysis for compiler 488 
  *  @author  <B> Put your names here </B>
@@ -27,7 +30,16 @@ public class Semantics {
 
 	private SymbolTable symbols;
 
-	private Stack<SymbolTable.SymbolScope> scopes;
+	private enum ScopeType {
+		Function, Procedure, Program, Normal
+	}
+
+	private Stack<Pair<ScopeType, SymbolTable.SymbolScope>> scopes;
+	private Stack<Pair<Symbol, Integer>> funcInfo;
+
+	private List<Symbol> partsAwaitingType;
+
+	private Symbol lastRoutine = null;
      
      /** SemanticAnalyzer constructor */
 	public Semantics (){
@@ -53,7 +65,11 @@ public class Semantics {
 	    symbols.Initialize();
 
 	    scopes = new Stack<>();
-	    scopes.push(symbols.globalScope);
+	    scopes.push(new Pair<>(ScopeType.Program, symbols.globalScope));
+
+	    funcInfo = new Stack<>();
+
+	    partsAwaitingType = new ArrayList<>();
 	   
 	   /*********************************************/
 	   /*  Additional initialization code for the   */
@@ -122,36 +138,105 @@ public class Semantics {
 	   if(actionNumber == 2) {
 
 	   } else if(actionNumber < 10) {
-		   handleScopeActions(actionNumber);
-	   } else if(actionNumber < 13) {
+		   handleScopeActions(actionNumber, target);
+	   } else if(actionNumber < 20 || actionNumber == 46 || actionNumber == 47) {
 		   handleDeclActions(actionNumber, target);
+	   } else if(actionNumber == 55 || actionNumber == 56) {
+		   handleSpecialActions(actionNumber);
+	   } else if(actionNumber >= 50 && actionNumber <= 54) {
+		   handleStatementActions(actionNumber, target);
 	   }
 
 	   System.out.println("Semantic Action: S" + actionNumber  );
 	   return ;
 	}
 
-	private void handleScopeActions(int actionNumber) {
-		if (actionNumber % 2 == 0) {
-			SymbolTable.SymbolScope currentScope = scopes.peek();
-			scopes.push(symbols.createNewScope(currentScope));
-		} else {
+	private void handleSpecialActions(int actionNumber) {
+		if(actionNumber == 55) {
+			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() + 1));
+		} else if(actionNumber == 56) {
+			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() - 1));
+		}
+	}
+
+	private void handleScopeActions(int actionNumber, AST target) {
+		if (actionNumber % 2 == 1) {
+			if(scopes.peek().getKey() == ScopeType.Function
+				|| scopes.peek().getKey() == ScopeType.Procedure) {
+				funcInfo.pop();
+			}
 			scopes.pop();
+			return;
+		}
+
+		SymbolTable.SymbolScope newScope = symbols.createNewScope(scopes.peek().getValue());
+		if(actionNumber == 4) {
+			scopes.push(new Pair<>(ScopeType.Function, newScope));
+			// Action 13 will handle adding to funcInfo
+		} else if (actionNumber == 6) {
+			scopes.push(new Pair<>(ScopeType.Normal, newScope));
+		} else if (actionNumber == 8) {
+			scopes.push(new Pair<>(ScopeType.Procedure, newScope));
+			// Action 13 will handle adding to funcInfo
 		}
 	}
 
 	private void handleDeclActions(int actionNumber, AST target) {
-		SymbolTable.SymbolScope currentScope = scopes.peek();
-		if(actionNumber == 10) {
+		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
+		if(actionNumber == 15) {
 			ScalarDecl decl = (ScalarDecl)target;
 			currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType())));
-		} else if(actionNumber == 11 || actionNumber == 12) {
+		} else if(actionNumber == 10) {
+			ScalarDeclPart part = (ScalarDeclPart)target;
+			Symbol s = new Symbol(null);
+			currentScope.addSymbol(part.getName(), s);
+			partsAwaitingType.add(s);
+		} else if(actionNumber == 11 || actionNumber == 12
+			|| actionNumber == 17 || actionNumber == 18) {
 			RoutineDecl decl = (RoutineDecl)target;
 			List<Symbol.DataType> parameters = new ArrayList<>();
 			for(ScalarDecl param : decl.getParameters()) {
 				parameters.add(Symbol.DTFromAST(param.getType()));
 			}
-			currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType()), parameters));
+			lastRoutine = new Symbol(Symbol.DTFromAST(decl.getType()), parameters);
+			currentScope.addSymbol(decl.getName(), lastRoutine);
+		} else if(actionNumber == 13) {
+			funcInfo.push(new Pair<>(lastRoutine, 0));
+		} else if(actionNumber == 19) {
+			ArrayDeclPart part = (ArrayDeclPart)target;
+			Symbol.ArrayBounds bounds = new Symbol.ArrayBounds(part);
+			Symbol s = new Symbol(null, bounds);
+			currentScope.addSymbol(part.getName(), s);
+			partsAwaitingType.add(s);
+		} else if(actionNumber == 46) {
+			ArrayDeclPart part = (ArrayDeclPart)target;
+			assert part.getLowerBoundary1() <= part.getUpperBoundary1();
+			assert !part.getTwoDimensional() || part.getLowerBoundary2() <= part.getUpperBoundary2();
+		} else if (actionNumber == 47) {
+			MultiDeclarations decl = (MultiDeclarations)target;
+			for(Symbol part : partsAwaitingType) {
+				part.resultantType = Symbol.DTFromAST(decl.getType());
+			}
+			partsAwaitingType.clear();
+		} else {
+			// Do nothing
+		}
+	}
+
+	private void handleStatementActions(int actionNumber, AST target) {
+		assert funcInfo.size() > 0;
+		if(actionNumber == 50) {
+			assert funcInfo.peek().getValue() > 0;
+		} else if(actionNumber == 51) {
+			assert funcInfo.peek().getKey().resultantType != Symbol.DataType.None;
+		} else if(actionNumber == 52) {
+			assert funcInfo.peek().getKey().resultantType == Symbol.DataType.None;
+		} else if(actionNumber == 53) {
+			ExitStmt exit = (ExitStmt)target;
+			assert 0 < exit.getLevel() && exit.getLevel() <= funcInfo.peek().getValue();
+		} else {
+			Scope s = (Scope) target;
+
 		}
 	}
 }

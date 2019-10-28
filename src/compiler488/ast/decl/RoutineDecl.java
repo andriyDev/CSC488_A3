@@ -124,40 +124,40 @@ public class RoutineDecl extends Declaration {
 		if(type == null) {
 			if(parameters.size() == 0) {
 				s.semanticAction(17, this);
-				s.semanticAction(8, null);
-				body.performSemanticAnalysis(s);
-				s.semanticAction(9, null);
+				s.semanticAction(8, this);
+				body.performStatementSemanticAnalysis(s);
+				s.semanticAction(9, this);
 				s.semanticAction(13, this);
 			} else {
-				s.semanticAction(8, null);
+				s.semanticAction(8, this);
 				s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
 					s.semanticAction(15, decl);
 					s.semanticAction(16, this);
 				}
 				s.semanticAction(18, this);
-				body.performSemanticAnalysis(s);
-				s.semanticAction(9, null);
+				body.performStatementSemanticAnalysis(s);
+				s.semanticAction(9, this);
 				s.semanticAction(13, this);
 			}
 		} else {
 			if(parameters.size() == 0) {
 				s.semanticAction(11, this);
-				s.semanticAction(4, null);
-				body.performSemanticAnalysis(s);
-				s.semanticAction(5, null);
+				s.semanticAction(4, this);
+				body.performStatementSemanticAnalysis(s);
+				s.semanticAction(5, this);
 				s.semanticAction(54, body);
 				s.semanticAction(13, this);
 			} else {
-				s.semanticAction(4, null);
+				s.semanticAction(4, this);
 				s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
 					s.semanticAction(15, decl);
 					s.semanticAction(16, this);
 				}
 				s.semanticAction(12, this);
-				body.performSemanticAnalysis(s);
-				s.semanticAction(5, null);
+				body.performStatementSemanticAnalysis(s);
+				s.semanticAction(5, this);
 				s.semanticAction(54, body);
 				s.semanticAction(13, this);
 			}

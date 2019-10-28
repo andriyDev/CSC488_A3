@@ -25,8 +25,10 @@ public class WhileDoStmt extends LoopingStmt {
 	public void performSemanticAnalysis(Semantics s) {
 		expn.performSemanticAnalysis(s);
 		s.semanticAction(30, expn);
+		s.semanticAction(55, this);
 		for(Stmt stmt : body) {
 			stmt.performSemanticAnalysis(s);
 		}
+		s.semanticAction(56, this);
 	}
 }

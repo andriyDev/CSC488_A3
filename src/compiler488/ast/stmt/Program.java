@@ -8,8 +8,8 @@ import compiler488.semantics.Semantics;
 public class Program extends Scope {
     @Override
     public void performSemanticAnalysis(Semantics s) {
-        s.semanticAction(0, null);
+        s.semanticAction(0, this);
         performStatementSemanticAnalysis(s);
-        s.semanticAction(1, null);
+        s.semanticAction(1, this);
     }
 }

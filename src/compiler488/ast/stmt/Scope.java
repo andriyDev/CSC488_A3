@@ -48,16 +48,16 @@ public class Scope extends Stmt {
 
 	@Override
 	public void performSemanticAnalysis(Semantics s) {
-		s.semanticAction(6, null);
+		s.semanticAction(6, this);
 		performStatementSemanticAnalysis(s);
-		s.semanticAction(7, null);
+		s.semanticAction(7, this);
 	}
 
-	void performStatementSemanticAnalysis(Semantics s) {
+	public void performStatementSemanticAnalysis(Semantics s) {
 		for(Declaration decl : declarations) {
 			decl.performSemanticAnalysis(s);
 		}
-		s.semanticAction(2, null);
+		s.semanticAction(2, this);
 		for(Stmt stmt : statements) {
 			stmt.performSemanticAnalysis(s);
 		}

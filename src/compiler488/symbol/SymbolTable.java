@@ -18,7 +18,7 @@ import java.util.List;
 
 public class SymbolTable {
 
-	public class SymbolScope {
+	public static class SymbolScope {
 		public SymbolScope parent;
 
 		public HashMap<String, Symbol> symbols;
