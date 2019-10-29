@@ -33,7 +33,10 @@ public class IdentExpn extends Expn implements Readable {
 	public boolean performSemanticAnalysis(Semantics s) {
 		boolean result;
 		Symbol sym = s.getScopeSymbol(ident);
-		if(sym.type == Symbol.SymbolType.Scalar) {
+		if(sym == null) {
+			result = s.semanticAction(57, this);
+		}
+		else if(sym.type == Symbol.SymbolType.Scalar) {
 			result = s.semanticAction(37, this);
 		} else if(sym.type == Symbol.SymbolType.Routine) {
 			result = s.semanticAction(37, this);

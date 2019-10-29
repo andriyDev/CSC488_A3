@@ -1,7 +1,8 @@
 {
     var hello : integer
     function hola : integer {
-        return with 7
+        var x,y : integer
+        x := x + y
     }
 
     write hola, " Some text"
