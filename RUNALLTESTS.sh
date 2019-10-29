@@ -1,7 +1,28 @@
 #!/bin/bash
+
+repeat() {
+    for i in $(seq 1 $1)
+    do
+        echo -n "."
+    done
+}
+
+MAXNAMELEN=0
+for filename in tests/pass/*.488 tests/fail/*.488; do
+    length=${#filename}
+    if [ $MAXNAMELEN \< $length ]
+    then
+        MAXNAMELEN=$length
+    fi
+done
+MAXNAMELEN=$((MAXNAMELEN + 10))
+
 echo -e "===== Passing cases =====\n"
 for filename in tests/pass/*.488; do
-    echo -n -e "Test \""$filename"\"..... "
+    msg="Test \"$filename\""
+    echo -n -e $msg
+    length=${#msg}
+    repeat $((MAXNAMELEN - length))
     java -jar dist/compiler488.jar -X "$filename" 2> ".tmp" > /dev/null
     ERROR=$(<.tmp)
     if [ -z "$ERROR" ]
@@ -14,7 +35,10 @@ for filename in tests/pass/*.488; do
 done
 echo -e "\n===== Failing cases =====\n"
 for filename in tests/fail/*.488; do
-    echo -n -e "Test \""$filename"\"..... "
+    msg="Test \"$filename\""
+    echo -n -e $msg
+    length=${#msg}
+    repeat $((MAXNAMELEN - length))
     java -jar dist/compiler488.jar -X "$filename" 2> ".tmp" > /dev/null
     ERROR=$(<.tmp)
     if [ -n "$ERROR" ]
