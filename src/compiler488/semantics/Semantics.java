@@ -252,13 +252,6 @@ public class Semantics {
 				}
 			}
 			scopes.pop();
-			System.out.println("=== popping ===");
-			for(Pair<ScopeType, SymbolTable.SymbolScope> s : scopes) {
-				System.out.println("=== " + (s.getKey() == ScopeType.Function ? "Function" : s.getKey() == ScopeType.Procedure ? "Procedure" : s.getKey() == ScopeType.Program ? "Program" : "Normal") + " ===");
-				for(String var : s.getValue().symbols.keySet()) {
-					System.out.println(var);
-				}
-			}
 			return true;
 		}
 
