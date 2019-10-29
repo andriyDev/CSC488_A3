@@ -1,0 +1,9 @@
+{
+    var x : integer
+    var a, b : boolean
+
+    x := 10
+
+    a := x <= 3 or x >= true
+
+}
