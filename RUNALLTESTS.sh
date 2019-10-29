@@ -17,8 +17,12 @@ for filename in tests/pass/*.488 tests/fail/*.488; do
 done
 MAXNAMELEN=$((MAXNAMELEN + 10))
 
+PASSCOUNT=0
+PASSTESTS=0
 echo -e "===== Passing cases =====\n"
 for filename in tests/pass/*.488; do
+    ((PASSTESTS ++))
+
     msg="Test \"$filename\""
     echo -n -e $msg
     length=${#msg}
@@ -28,13 +32,18 @@ for filename in tests/pass/*.488; do
     if [ -z "$ERROR" ]
     then
         echo -n -e "PASSED\n"
+        ((PASSCOUNT ++))
     else
         echo -n -e "FAILED\n"
         echo $ERROR
     fi
 done
+
+FAILCOUNT=0
+FAILTESTS=0
 echo -e "\n===== Failing cases =====\n"
 for filename in tests/fail/*.488; do
+    ((FAILTESTS ++))
     msg="Test \"$filename\""
     echo -n -e $msg
     length=${#msg}
@@ -45,8 +54,13 @@ for filename in tests/fail/*.488; do
     then
         echo -n -e "PASSED\n"
         echo "$ERROR"
+        ((FAILCOUNT ++))
     else
         echo -n -e "FAILED\n"
     fi
 done
+
+echo -e "\n\n=======Passing cases: $PASSCOUNT / $PASSTESTS =========\n"
+echo -e "=======Failing cases: $FAILCOUNT / $FAILTESTS =========\n"
+
 rm -rf ".tmp"

@@ -1,0 +1,23 @@
+{
+
+    while true do
+    {
+        exit 1
+    }
+
+    while true do
+        while true do
+            while true do
+            {
+                exit 3
+            }
+
+    repeat
+    {
+        repeat
+        {
+            exit 1
+        } until false
+    } until true
+
+}

@@ -1,0 +1,13 @@
+{
+    {
+        var x, y : boolean
+        x := true
+        y := not x
+    }
+    
+    {
+        var a, b : integer
+        a := 1
+        b := -a + 4
+    }
+}

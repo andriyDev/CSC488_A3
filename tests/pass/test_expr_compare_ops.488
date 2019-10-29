@@ -1,0 +1,12 @@
+{
+    var x, y : integer
+    var a, b : boolean
+
+    x := 10
+    y := x + 1
+
+    a := (x >= 5) or (y <= 3)
+
+    b :=  (x < y) and (x > y)
+
+}

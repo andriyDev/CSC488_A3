@@ -1,0 +1,5 @@
+{
+	var arr1d[bool] : integer
+
+	write 1
+}

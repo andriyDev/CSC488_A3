@@ -1,0 +1,19 @@
+{
+	procedure proc_no_param { return }
+
+	procedure proc_with_int (val : integer) 
+	{
+		return 
+	}
+
+	procedure proc_with_multi_param (val_1 : boolean, val_2 : integer) 
+	{
+		write 1
+
+        return
+	}
+
+	proc_no_param
+	proc_with_int(1)
+	proc_with_multi_param(true, 10)
+}
