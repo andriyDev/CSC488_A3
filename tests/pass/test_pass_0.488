@@ -3,6 +3,7 @@
     function hola : integer {
         var x,y : integer
         x := x + y
+        return with x
     }
 
     write hola, " Some text"

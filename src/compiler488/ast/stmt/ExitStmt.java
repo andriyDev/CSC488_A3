@@ -79,7 +79,7 @@ public class ExitStmt extends Stmt {
 			result = expn.performSemanticAnalysis(s);
 		}
 
-		result &= s.semanticAction(50, null);
+		result &= s.semanticAction(50, this);
 		if(level != -1)
 		{
 			// Use this object to figure out if there are enough loops to leave.

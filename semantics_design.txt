@@ -1,3 +1,4 @@
 Added a semantic action to increment and decrement the current number of loops when entering a loop and exiting a loop.
 Added a semantic action to check whether a subscript has the same number of dimensions as the array definition.
 Added a semantic action for checking if an expression is assignable.
+Semantic action 54 had undefined behaviour, since just one return statement does not guarantee that a function will terminate, so the check was expanded to ensure that the function definitely returns at some point. If this does not happen, it is a semantic error.
