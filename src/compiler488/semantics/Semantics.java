@@ -13,6 +13,8 @@ import compiler488.ast.stmt.*;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
 import compiler488.Pair;
+import compiler488.ast.type.BooleanType;
+import compiler488.ast.type.IntegerType;
 
 import static compiler488.symbol.Symbol.DataType.Int;
 import static compiler488.symbol.Symbol.DataType.None;
@@ -30,6 +32,11 @@ public class Semantics {
 	public File f;
 
 	private SymbolTable symbols;
+
+	private enum Type {
+		Int, Bool, None
+	}
+	private HashMap<Expn, Type> expns;
 
 	private enum ScopeType {
 		Function, Procedure, Program, Normal
@@ -71,6 +78,8 @@ public class Semantics {
 
 		symbols = new SymbolTable();
 	    symbols.Initialize();
+
+	    expns = new HashMap<Expn, Type>();
 
 	    scopes = new Stack<>();
 	    scopes.push(new Pair<>(ScopeType.Program, symbols.globalScope));
@@ -349,11 +358,6 @@ public class Semantics {
 		}
 	}
 
-	private enum Type {
-		Int, Bool, None
-	}
-	private HashMap<Expn, Type> expns;
-
 	private boolean handleExprTypeActions(int actionNumber, AST target) {
 		if (actionNumber == 20) {
 			BoolExpn expn = (BoolExpn)target;
@@ -362,14 +366,32 @@ public class Semantics {
 			ArithExpn expn = (ArithExpn)target;
 			expns.put(expn, Type.Int);
 		} else if (actionNumber == 23) {
-
+			Expn expn = (Expn)target;
+			if (expn instanceof ArithExpn) {
+				expns.put(expn, Type.Int);
+			} else if (expn instanceof BoolExpn) {
+				expns.put(expn, Type.Bool);
+			} else {
+				return false;
+			}
 		} else if (actionNumber == 24) {
-
+			Expn expnTrue = ((ConditionalExpn)target).getTrueValue();
+			Expn expnFalse = ((ConditionalExpn)target).getFalseValue();
+			if (expnTrue instanceof ArithExpn && expnFalse instanceof ArithExpn) {
+				expns.put(expnTrue, Type.Int);
+				expns.put(expnFalse, Type.Int);
+			} else if (expnTrue instanceof BoolExpn && expnFalse instanceof BoolExpn) {
+				expns.put(expnTrue, Type.Bool);
+				expns.put(expnFalse, Type.Bool);
+			} else {
+				return false;
+			}
 		} else if (actionNumber == 25) {
 
 		} else if (actionNumber == 26) {
 
 		} else if (actionNumber == 27) {
+			AST arrayDecl = (ArrayDeclPart)target;
 
 		} else if (actionNumber == 28) {
 
@@ -379,6 +401,8 @@ public class Semantics {
 	}
 
 	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
+		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
+
 		if (actionNumber == 30) {
 			BoolExpn expn = (BoolExpn) target;
 			if (expns.containsKey(expn)) {
@@ -405,11 +429,29 @@ public class Semantics {
 				return false;
 			}
 		} else if (actionNumber == 33) {
-
+			Expn expnTrue = ((ConditionalExpn)target).getTrueValue();
+			Expn expnFalse = ((ConditionalExpn)target).getFalseValue();
+			if (expns.containsKey(expnTrue) && expns.containsKey(expnFalse)) {
+				return expns.get(expnTrue) == expns.get(expnFalse);
+			} else {
+				System.err.println("These expressions aren't defined.");
+				return false;
+			}
 		} else if (actionNumber == 34) {
-
+			AST stmtLeft = ((AssignStmt)target).getLval();
+			AST stmtRight = ((AssignStmt)target).getRval();
+			if (expns.containsKey(stmtLeft) && expns.containsKey(stmtRight)) {
+				// Check if assignment is valid
+				return expns.get(stmtLeft) == expns.get(stmtRight);
+			} else {
+				System.err.println("These expressions aren't defined.");
+				return false;
+			}
 		} else if (actionNumber == 35) {
+			Expn returnStmt = ((ReturnStmt)target).getValue();
+			if (expns.containsKey(returnStmt)) {
 
+			}
 		} else if (actionNumber == 36) {
 
 		} else if (actionNumber == 37) {
