@@ -143,15 +143,19 @@ public class Semantics {
 
 	   if(actionNumber == 2) {
 
-	   } else if(actionNumber < 10) {
+	   } else if(actionNumber < 10) { // Scopes and Program
 		   result = handleScopeActions(actionNumber, target);
-	   } else if(actionNumber < 20 || actionNumber == 46 || actionNumber == 47) {
+	   } else if(actionNumber < 20 || actionNumber == 46 || actionNumber == 47) { // Declarations
 		   result = handleDeclActions(actionNumber, target);
-	   } else if(actionNumber >= 55) {
+	   } else if (actionNumber < 29) { // Expression Types
+	   	   result = handleExprTypeActions(actionNumber, target);
+	   } else if (actionNumber < 40) { // Expression Type Checking
+	   	   result = handleExprTypeCheckActions(actionNumber, target);
+	   } else if(actionNumber >= 55) { // Other
 		   result = handleSpecialActions(actionNumber, target);
-	   } else if(actionNumber >= 50) {
+	   } else if(actionNumber >= 50) { // Statement Checking
 		   result = handleStatementActions(actionNumber, target);
-	   } else if(actionNumber >= 40 && actionNumber <= 45) {
+	   } else if(actionNumber >= 40 && actionNumber <= 45) { // Functions, procedures and arguments
 		   result = handleCallActions(actionNumber, target);
 	   }
 
@@ -338,6 +342,37 @@ public class Semantics {
 		} else {
 			// Do nothing, we say this is ok.
 			return true;
+		}
+	}
+
+	private boolean handleExprTypeActions(int actionNumber, AST target) {
+		if(scopes.size() == 0) {
+			throw new RuntimeException("No scopes!");
+		}
+		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
+
+		if (actionNumber == 20) {
+			BoolExpn expn = (BoolExpn)target;
+			Symbol s = new Symbol(Bool);
+			try {
+				currentScope.addSymbol(expn.getName(), s);
+				return true;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
+		}
+	}
+
+	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
+		if (actionNumber == 30) {
+			BoolExpn expn = (BoolExpn) target;
+			Symbol sym = getScopeSymbol(expn.getName());
+			return sym.DataType == Bool;
+		} else if (actionNumber == 31) {
+
+		} else if (actionNumber == 32) {
+
 		}
 	}
 
