@@ -4,13 +4,11 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.HashMap;
 
 import compiler488.ast.AST;
 import compiler488.ast.decl.*;
-import compiler488.ast.expn.BoolExpn;
-import compiler488.ast.expn.FunctionCallExpn;
-import compiler488.ast.expn.IdentExpn;
-import compiler488.ast.expn.SubsExpn;
+import compiler488.ast.expn.*;
 import compiler488.ast.stmt.*;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
@@ -358,24 +356,12 @@ public class Semantics {
 	private boolean handleExprTypeActions(int actionNumber, AST target) {
 		if (actionNumber == 20) {
 			BoolExpn expn = (BoolExpn)target;
-			try {
-				expns.put(expn, Type.Bool)
-				return true;
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
-				return false;
-			}
+			expns.put(expn, Type.Bool);
 		} else if (actionNumber == 21) {
 			ArithExpn expn = (ArithExpn)target;
-			try {
-				expn.put(expn, Type.Int);
-				return true;
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
-				return false;
-			}
+			expns.put(expn, Type.Int);
 		} else if (actionNumber == 23) {
-			
+
 		} else if (actionNumber == 24) {
 
 		} else if (actionNumber == 25) {
@@ -387,32 +373,34 @@ public class Semantics {
 		} else if (actionNumber == 28) {
 
 		}
+
+		return true;
 	}
 
 	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
 		if (actionNumber == 30) {
 			BoolExpn expn = (BoolExpn) target;
-			try {
+			if (expns.containsKey(expn)) {
 				return expns.get(expn) == Type.Bool;
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
+			} else {
+				System.err.println("This expression isn't defined.");
 				return false;
 			}
 		} else if (actionNumber == 31) {
 			ArithExpn expn = (ArithExpn) target;
-			try {
+			if (expns.containsKey(expn)) {
 				return expns.get(expn) == Type.Int;
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
+			} else {
+				System.err.println("This expression isn't defined.");
 				return false;
 			}
 		} else if (actionNumber == 32) {
-			Expn expnLeft = target.left;
-			Expn expnRight = target.right;
-			try {
+			Expn expnLeft = ((BinaryExpn)target).getLeft();
+			Expn expnRight = ((BinaryExpn)target).getRight();
+			if (expns.containsKey(expnLeft) && expns.containsKey(expnRight)) {
 				return expns.get(expnLeft) == expns.get(expnRight);
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
+			} else {
+				System.err.println("These expressions aren't defined.");
 				return false;
 			}
 		} else if (actionNumber == 33) {
@@ -430,6 +418,8 @@ public class Semantics {
 		} else if (actionNumber == 39) {
 
 		}
+
+		return true;
 	}
 
 	private boolean handleStatementActions(int actionNumber, AST target) {
