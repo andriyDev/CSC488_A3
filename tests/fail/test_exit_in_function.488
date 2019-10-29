@@ -1,0 +1,6 @@
+{
+    function f : integer {
+        exit
+        return with 0
+    }
+}

@@ -1,0 +1,5 @@
+{
+    function f : boolean {
+        return with 0
+    }
+}

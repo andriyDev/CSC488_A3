@@ -1,0 +1,6 @@
+{
+    var f : boolean
+    function f : integer {
+        return with 0
+    }
+}

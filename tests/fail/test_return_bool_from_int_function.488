@@ -1,0 +1,5 @@
+{
+    function f : integer {
+        return with true
+    }
+}

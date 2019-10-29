@@ -1,0 +1,7 @@
+{
+    function f(a : integer, b : integer) : integer {
+        return with 0
+    }
+    var x : integer
+    x := f
+}
