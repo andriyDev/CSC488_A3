@@ -313,7 +313,8 @@ public class Semantics {
 		} else if(actionNumber == 13) {
 			funcInfo.push(new Pair<>(lastRoutine, 0));
 			if(lastRoutine == null) {
-				throw new RuntimeException("No Last Routine! This shouldn't be possible!");
+				System.err.println("No last routine defined. Routine must have failed initialization. " + positionString(target));
+				return false;
 			}
 			return true;
 		} else if(actionNumber == 19) {
