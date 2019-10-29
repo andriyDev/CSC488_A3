@@ -375,14 +375,7 @@ public class Semantics {
 				return false;
 			}
 		} else if (actionNumber == 23) {
-			ArithExpn expn = (ArithExpn)target;
-			try {
-				expn.put(expn, Type.Int);
-				return true;
-			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
-				return false;
-			}
+			
 		} else if (actionNumber == 24) {
 
 		} else if (actionNumber == 25) {
