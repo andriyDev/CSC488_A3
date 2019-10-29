@@ -130,13 +130,13 @@ public class RoutineDecl extends Declaration {
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(9, this);
 			} else {
-				result = s.semanticAction(8, this);
+				result = s.semanticAction(18, this);
+				result &= s.semanticAction(8, this);
 				result &= s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
 					result &= s.semanticAction(15, decl);
 					result &= s.semanticAction(16, this);
 				}
-				result &= s.semanticAction(18, this);
 				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(9, this);
@@ -150,13 +150,13 @@ public class RoutineDecl extends Declaration {
 				result &= s.semanticAction(5, this);
 				result &= s.semanticAction(54, body);
 			} else {
-				result = s.semanticAction(4, this);
+				result = s.semanticAction(12, this);
+				result &= s.semanticAction(4, this);
 				result &= s.semanticAction(14, this);
 				for(ScalarDecl decl : parameters) {
 					result &= s.semanticAction(15, decl);
 					result &= s.semanticAction(16, this);
 				}
-				result &= s.semanticAction(12, this);
 				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(5, this);

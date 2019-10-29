@@ -77,6 +77,7 @@ public class ExitStmt extends Stmt {
 		boolean result = true;
 		if(expn != null) {
 			result = expn.performSemanticAnalysis(s);
+			result &= s.semanticAction(30, expn);
 		}
 
 		result &= s.semanticAction(50, this);

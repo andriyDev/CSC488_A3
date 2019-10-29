@@ -38,8 +38,9 @@ public class IdentExpn extends Expn implements Readable {
 		}
 		else if(sym.type == Symbol.SymbolType.Scalar) {
 			result = s.semanticAction(37, this);
+			result = s.semanticAction(26, this);
 		} else if(sym.type == Symbol.SymbolType.Routine) {
-			result = s.semanticAction(37, this);
+			result = s.semanticAction(40, this);
 			result &= s.semanticAction(42, this);
 			result &= s.semanticAction(28, this);
 		} else {

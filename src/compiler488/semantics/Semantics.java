@@ -33,10 +33,7 @@ public class Semantics {
 
 	private SymbolTable symbols;
 
-	private enum Type {
-		Int, Bool, None
-	}
-	private HashMap<Expn, Type> expns;
+	private HashMap<Expn, Symbol.DataType> expns;
 
 	private enum ScopeType {
 		Function, Procedure, Program, Normal
@@ -79,7 +76,7 @@ public class Semantics {
 		symbols = new SymbolTable();
 	    symbols.Initialize();
 
-	    expns = new HashMap<Expn, Type>();
+	    expns = new HashMap<>();
 
 	    scopes = new Stack<>();
 	    scopes.push(new Pair<>(ScopeType.Program, symbols.globalScope));
@@ -255,6 +252,13 @@ public class Semantics {
 				}
 			}
 			scopes.pop();
+			System.out.println("=== popping ===");
+			for(Pair<ScopeType, SymbolTable.SymbolScope> s : scopes) {
+				System.out.println("=== " + (s.getKey() == ScopeType.Function ? "Function" : s.getKey() == ScopeType.Procedure ? "Procedure" : s.getKey() == ScopeType.Program ? "Program" : "Normal") + " ===");
+				for(String var : s.getValue().symbols.keySet()) {
+					System.out.println(var);
+				}
+			}
 			return true;
 		}
 
@@ -360,106 +364,225 @@ public class Semantics {
 
 	private boolean handleExprTypeActions(int actionNumber, AST target) {
 		if (actionNumber == 20) {
-			BoolExpn expn = (BoolExpn)target;
-			expns.put(expn, Type.Bool);
-		} else if (actionNumber == 21) {
-			ArithExpn expn = (ArithExpn)target;
-			expns.put(expn, Type.Int);
-		} else if (actionNumber == 23) {
 			Expn expn = (Expn)target;
-			if (expn instanceof ArithExpn) {
-				expns.put(expn, Type.Int);
-			} else if (expn instanceof BoolExpn) {
-				expns.put(expn, Type.Bool);
-			} else {
-				return false;
-			}
+			expns.put(expn, Symbol.DataType.Bool);
+			return true;
+		} else if (actionNumber == 21) {
+			Expn expn = (Expn)target;
+			expns.put(expn, Symbol.DataType.Int);
+			return true;
 		} else if (actionNumber == 24) {
-			Expn expnTrue = ((ConditionalExpn)target).getTrueValue();
-			Expn expnFalse = ((ConditionalExpn)target).getFalseValue();
-			if (expnTrue instanceof ArithExpn && expnFalse instanceof ArithExpn) {
-				expns.put(expnTrue, Type.Int);
-				expns.put(expnFalse, Type.Int);
-			} else if (expnTrue instanceof BoolExpn && expnFalse instanceof BoolExpn) {
-				expns.put(expnTrue, Type.Bool);
-				expns.put(expnFalse, Type.Bool);
-			} else {
-				return false;
+			ConditionalExpn cond = (ConditionalExpn)target;
+			Expn expnTrue = cond.getTrueValue();
+			Expn expnFalse = cond.getFalseValue();
+			if(!expns.containsKey(expnTrue) || !expns.containsKey(expnFalse)) {
+				throw new RuntimeException("This should not be possible. We should have analyzed both child expressions before this.");
 			}
-		} else if (actionNumber == 25) {
-
+			if(expns.get(expnTrue) != expns.get(expnFalse)) {
+				System.err.println("Expressions of conditional do not have matching type. " + positionString(target));
+				return false;
+			} else {
+				expns.put(cond, expns.get(expnTrue));
+				return true;
+			}
 		} else if (actionNumber == 26) {
-
+			IdentExpn expn = (IdentExpn)target;
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym = getScopeSymbol(expn.getIdent());
+			if(sym == null) {
+				System.err.println("Variable not declared in scope! " + positionString(target));
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Scalar) {
+				System.err.println("Variable is not a scalar! " + positionString(target));
+				return false;
+			} else {
+				expns.put(expn, sym.resultantType);
+				return true;
+			}
 		} else if (actionNumber == 27) {
-
+			SubsExpn expn = (SubsExpn) target;
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym = getScopeSymbol(expn.getVariable());
+			if(sym == null) {
+				System.err.println("Variable not declared in scope! " + positionString(target));
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Array) {
+				System.err.println("Variable is not declared as an array! " + positionString(target));
+				return false;
+			} else {
+				expns.put(expn, sym.resultantType);
+				return true;
+			}
 		} else if (actionNumber == 28) {
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym;
+			Expn expn = (Expn) target;
+			if(expn instanceof FunctionCallExpn) {
+				FunctionCallExpn call = (FunctionCallExpn) expn;
+				sym = getScopeSymbol(call.getIdent());
+			} else {
+				IdentExpn call = (IdentExpn) expn;
+				sym = getScopeSymbol(call.getIdent());
+			}
 
+			if(sym == null) {
+				System.err.println("Function not declared in scope! " + positionString(target));
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Routine) {
+				System.err.println("Function is not declared as a routine! " + positionString(target));
+				return false;
+			} else if(sym.resultantType == null) {
+				System.err.println("Symbol is actually a procedure, not a function! " + positionString(target));
+			} else {
+				expns.put(expn, sym.resultantType);
+				return true;
+			}
 		}
-
 		return true;
 	}
 
 	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
 		if (actionNumber == 30) {
-			BoolExpn expn = (BoolExpn) target;
+			Expn expn = (Expn) target;
 			if (expns.containsKey(expn)) {
-				return expns.get(expn) == Type.Bool;
+				if(expns.get(expn) != Symbol.DataType.Bool) {
+					System.err.println("Type of expression is not boolean. " + positionString(target));
+					return false;
+				} else {
+					return true;
+				}
 			} else {
-				System.err.println("This expression isn't defined.");
+				System.err.println("This expression isn't defined. " + positionString(target));
 				return false;
 			}
 		} else if (actionNumber == 31) {
-			ArithExpn expn = (ArithExpn) target;
+			Expn expn = (Expn) target;
 			if (expns.containsKey(expn)) {
-				return expns.get(expn) == Type.Int;
+				if(expns.get(expn) != Symbol.DataType.Int) {
+					System.err.println("Type of expression is not integer. " + positionString(target));
+					return false;
+				} else {
+					return true;
+				}
 			} else {
-				System.err.println("This expression isn't defined.");
+				System.err.println("This expression isn't defined. " + positionString(target));
 				return false;
 			}
 		} else if (actionNumber == 32) {
 			Expn expnLeft = ((BinaryExpn)target).getLeft();
 			Expn expnRight = ((BinaryExpn)target).getRight();
 			if (expns.containsKey(expnLeft) && expns.containsKey(expnRight)) {
-				return expns.get(expnLeft) == expns.get(expnRight);
+				if(expns.get(expnLeft) != expns.get(expnRight))  {
+					System.err.println("Types of expressions do not match. " + positionString(target));
+					return false;
+				} else {
+					return true;
+				}
 			} else {
-				System.err.println("These expressions aren't defined.");
+				System.err.println("These expressions aren't defined. " + positionString(target));
 				return false;
 			}
 		} else if (actionNumber == 33) {
 			Expn expnTrue = ((ConditionalExpn)target).getTrueValue();
 			Expn expnFalse = ((ConditionalExpn)target).getFalseValue();
 			if (expns.containsKey(expnTrue) && expns.containsKey(expnFalse)) {
-				return expns.get(expnTrue) == expns.get(expnFalse);
+				if(expns.get(expnTrue) != expns.get(expnFalse))  {
+					System.err.println("Types of expressions do not match. " + positionString(target));
+					return false;
+				} else {
+					return true;
+				}
 			} else {
-				System.err.println("These expressions aren't defined.");
+				System.err.println("These expressions aren't defined. " + positionString(target));
 				return false;
 			}
 		} else if (actionNumber == 34) {
-			AST stmtLeft = ((AssignStmt)target).getLval();
-			AST stmtRight = ((AssignStmt)target).getRval();
+			Expn stmtLeft = ((AssignStmt)target).getLval();
+			Expn stmtRight = ((AssignStmt)target).getRval();
 			if (expns.containsKey(stmtLeft) && expns.containsKey(stmtRight)) {
-				// Check if assignment is valid
-				return expns.get(stmtLeft) == expns.get(stmtRight);
+				if(expns.get(stmtLeft) != expns.get(stmtRight))  {
+					System.err.println("Types of assignment do not match. " + positionString(target));
+					return false;
+				} else {
+					return true;
+				}
 			} else {
-				System.err.println("These expressions aren't defined.");
+				System.err.println("These expressions aren't defined. " + positionString(target));
 				return false;
 			}
 		} else if (actionNumber == 35) {
-			Expn returnStmt = ((ReturnStmt)target).getValue();
-			if (expns.containsKey(returnStmt)) {
-
+			Expn returnStmt = (Expn)target;
+			if (!expns.containsKey(returnStmt)) {
+				System.err.println("Expression is not defined. " + positionString(target));
+				return false;
+			} else if(funcInfo.size() == 0) {
+				System.err.println("No function info!");
+				return false;
+			} else if(funcInfo.peek().getKey() == null) {
+				System.err.println("Cannot return here! " + positionString(target));
+				return false;
+			} else if(funcInfo.peek().getKey().resultantType != expns.get(returnStmt)) {
+				System.err.println("Expression does not have the return type of the function. " + positionString(target));
+				return false;
+			} else {
+				return true;
 			}
 		} else if (actionNumber == 36) {
-
+			Expn expn = (Expn)target;
+			if(checkingCall == null) {
+				System.err.println("Not checking any call arguments. " + positionString(target));
+				return false;
+			} else if(!expns.containsKey(expn)) {
+				System.err.println("Expression has not been defined. " + positionString(target));
+				return false;
+			} else if(callArg >= checkingCall.parameters.size()) {
+				// Do nothing, this will be reported later.
+				return false;
+			} else if(checkingCall.parameters.get(callArg) != expns.get(expn)) {
+				System.err.println("Argument has the wrong type for function parameter. " + positionString(target));
+				return false;
+			} else {
+				return true;
+			}
 		} else if (actionNumber == 37) {
-
+			IdentExpn expn = (IdentExpn)target;
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym = getScopeSymbol(expn.getIdent());
+			if(sym == null) {
+				System.err.println("Symbol not defined! " + positionString(target));
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Scalar) {
+				System.err.println("Symbol not declared as a scalar. " + positionString(target));
+				return false;
+			} else {
+				return true;
+			}
 		} else if (actionNumber == 38) {
-
-		} else if (actionNumber == 39) {
-
+			SubsExpn expn = (SubsExpn)target;
+			if(scopes.size() == 0) {
+				throw new RuntimeException("No scopes!");
+			}
+			Symbol sym = getScopeSymbol(expn.getVariable());
+			if(sym == null) {
+				System.err.println("Symbol not defined! " + positionString(target));
+				return false;
+			} else if(sym.type != Symbol.SymbolType.Array) {
+				System.err.println("Symbol not declared as an array. " + positionString(target));
+				return false;
+			} else {
+				return true;
+			}
+		} else {
+			return true;
 		}
-
-		return true;
 	}
 
 	private boolean handleStatementActions(int actionNumber, AST target) {
