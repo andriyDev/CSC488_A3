@@ -4,6 +4,8 @@ import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.Printable;
 import compiler488.ast.expn.Expn;
+import compiler488.ast.expn.SkipConstExpn;
+import compiler488.ast.expn.TextConstExpn;
 import compiler488.semantics.Semantics;
 
 /**
@@ -29,6 +31,9 @@ public class WriteStmt extends Stmt {
 		boolean result = true;
 		for(Printable element : outputs) {
 			if(element instanceof Expn) {
+				if(element instanceof SkipConstExpn || element instanceof TextConstExpn) {
+					continue;
+				}
 				result &= element.performSemanticAnalysis(s);
 				result &= s.semanticAction(31, element);
 			}

@@ -1,5 +1,5 @@
 {
-    var x_1, x_2 : integer;
+    var x_1, x_2 : integer
 
     function func(in_int_val : integer) : integer { return with in_int_val }
 
@@ -8,7 +8,7 @@
 
     write newline
     write "123"
-    write "abc", newline, x
+    write "abc", newline, x_1
 
     write (x_1 = x_2 ? x_1 * x_2 : x_1)
     
