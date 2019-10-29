@@ -345,33 +345,91 @@ public class Semantics {
 		}
 	}
 
-	private boolean handleExprTypeActions(int actionNumber, AST target) {
-		if(scopes.size() == 0) {
-			throw new RuntimeException("No scopes!");
-		}
-		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
+	private enum Type {
+		Int, Bool, None
+	}
+	private HashMap<Expn, Type> expns;
 
+	private boolean handleExprTypeActions(int actionNumber, AST target) {
 		if (actionNumber == 20) {
 			BoolExpn expn = (BoolExpn)target;
-			Symbol s = new Symbol(Bool);
 			try {
-				currentScope.addSymbol(expn.getName(), s);
+				expns.put(expn, Type.Bool)
 				return true;
 			} catch(RuntimeException ex) {
 				System.err.println(ex.getMessage());
 				return false;
 			}
+		} else if (actionNumber == 21) {
+			ArithExpn expn = (ArithExpn)target;
+			try {
+				expn.put(expn, Type.Int);
+				return true;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
+		} else if (actionNumber == 23) {
+			ArithExpn expn = (ArithExpn)target;
+			try {
+				expn.put(expn, Type.Int);
+				return true;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
+		} else if (actionNumber == 24) {
+
+		} else if (actionNumber == 25) {
+
+		} else if (actionNumber == 26) {
+
+		} else if (actionNumber == 27) {
+
+		} else if (actionNumber == 28) {
+
 		}
 	}
 
 	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
 		if (actionNumber == 30) {
 			BoolExpn expn = (BoolExpn) target;
-			Symbol sym = getScopeSymbol(expn.getName());
-			return sym.DataType == Bool;
+			try {
+				return expns.get(expn) == Type.Bool;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
 		} else if (actionNumber == 31) {
-
+			ArithExpn expn = (ArithExpn) target;
+			try {
+				return expns.get(expn) == Type.Int;
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
 		} else if (actionNumber == 32) {
+			Expn expnLeft = target.left;
+			Expn expnRight = target.right;
+			try {
+				return expns.get(expnLeft) == expns.get(expnRight);
+			} catch(RuntimeException ex) {
+				System.err.println(ex.getMessage());
+				return false;
+			}
+		} else if (actionNumber == 33) {
+
+		} else if (actionNumber == 34) {
+
+		} else if (actionNumber == 35) {
+
+		} else if (actionNumber == 36) {
+
+		} else if (actionNumber == 37) {
+
+		} else if (actionNumber == 38) {
+
+		} else if (actionNumber == 39) {
 
 		}
 	}
