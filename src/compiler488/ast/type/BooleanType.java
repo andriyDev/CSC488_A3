@@ -14,6 +14,6 @@ public class BooleanType extends Type {
 
     @Override
     public boolean performSemanticAnalysis(Semantics s) {
-        return s.semanticAction(20, null);
+        return s.semanticAction(20, this);
     }
 }

@@ -50,12 +50,17 @@ public class ReturnStmt extends Stmt {
 		boolean result;
 		if(value != null) {
 			result = value.performSemanticAnalysis(s);
-			result &= s.semanticAction(51, null);
+			result &= s.semanticAction(51, this);
 			result &= s.semanticAction(35, value);
 		}
 		else {
-			result = s.semanticAction(52, null);
+			result = s.semanticAction(52, this);
 		}
 		return result;
+	}
+
+	@Override
+	public boolean hasReturn() {
+		return true;
 	}
 }

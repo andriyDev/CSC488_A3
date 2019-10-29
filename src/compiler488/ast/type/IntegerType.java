@@ -13,6 +13,6 @@ public class IntegerType extends Type {
 
     @Override
     public boolean performSemanticAnalysis(Semantics s) {
-        return s.semanticAction(21, null);
+        return s.semanticAction(21, this);
     }
 }

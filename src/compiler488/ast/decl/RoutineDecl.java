@@ -126,9 +126,9 @@ public class RoutineDecl extends Declaration {
 			if(parameters.size() == 0) {
 				result = s.semanticAction(17, this);
 				result &= s.semanticAction(8, this);
+				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(9, this);
-				result &= s.semanticAction(13, this);
 			} else {
 				result = s.semanticAction(8, this);
 				result &= s.semanticAction(14, this);
@@ -137,18 +137,18 @@ public class RoutineDecl extends Declaration {
 					result &= s.semanticAction(16, this);
 				}
 				result &= s.semanticAction(18, this);
+				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(9, this);
-				result &= s.semanticAction(13, this);
 			}
 		} else {
 			if(parameters.size() == 0) {
 				result = s.semanticAction(11, this);
 				result &= s.semanticAction(4, this);
+				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(5, this);
 				result &= s.semanticAction(54, body);
-				result &= s.semanticAction(13, this);
 			} else {
 				result = s.semanticAction(4, this);
 				result &= s.semanticAction(14, this);
@@ -157,10 +157,10 @@ public class RoutineDecl extends Declaration {
 					result &= s.semanticAction(16, this);
 				}
 				result &= s.semanticAction(12, this);
+				result &= s.semanticAction(13, this);
 				result &= body.performStatementSemanticAnalysis(s);
 				result &= s.semanticAction(5, this);
 				result &= s.semanticAction(54, body);
-				result &= s.semanticAction(13, this);
 			}
 		}
 		return result;

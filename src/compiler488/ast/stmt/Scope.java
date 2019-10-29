@@ -13,9 +13,16 @@ public class Scope extends Stmt {
 	protected ASTList<Declaration> declarations;
 	protected ASTList<Stmt> statements;
 
-	public Scope() {
+	public Scope(ASTList<Declaration> decls, ASTList<Stmt> stmts)
+	{
 		declarations = new ASTList<Declaration>();
 		statements = new ASTList<Stmt>();
+		
+		if (decls != null)
+			declarations = decls;
+
+		if (stmts != null)
+			statements = stmts;
 	}
 
 	public void setDeclarations(ASTList<Declaration> declarations) {
@@ -65,5 +72,15 @@ public class Scope extends Stmt {
 			result &= stmt.performSemanticAnalysis(s);
 		}
 		return result;
+	}
+
+	@Override
+	public boolean hasReturn() {
+		for(Stmt stmt : statements) {
+			if(stmt.hasReturn()) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

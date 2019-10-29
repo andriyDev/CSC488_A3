@@ -1,0 +1,9 @@
+We created 2 classes to handle the symbol table (and several internal classes):
+SymbolTable - Handles the main scopes of the table, and communication between with the semantic analyzer.
+Symbol - Defines a single item in the table. This just stores the description of the symbol (data type, array, routine, etc). This does not store the name of the Symbol. This is stored in SymbolTable.
+
+In these, we have 2 internal classes:
+SymbolScope - Holds the symbols for all the declarations in the current scope, and a pointer to the parent scope (so that it can access variables there). It has a HashMap which maps the names of symbols to their Symbol objects.
+ArrayBounds - A simple representation of the bounds of an array (whether 1d or 2d).
+
+Using SymbolScope, we can have a "reversed" tree of scopes, so deeper scopes can still access scopes above them.

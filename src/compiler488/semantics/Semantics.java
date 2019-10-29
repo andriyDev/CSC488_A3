@@ -7,14 +7,16 @@ import java.util.Stack;
 
 import compiler488.ast.AST;
 import compiler488.ast.decl.*;
+import compiler488.ast.expn.BoolExpn;
 import compiler488.ast.expn.FunctionCallExpn;
 import compiler488.ast.expn.IdentExpn;
 import compiler488.ast.expn.SubsExpn;
 import compiler488.ast.stmt.*;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
-import javafx.util.Pair;
+import compiler488.Pair;
 
+import static compiler488.symbol.Symbol.DataType.Int;
 import static compiler488.symbol.Symbol.DataType.None;
 
 /** Implement semantic analysis for compiler 488 
@@ -56,6 +58,11 @@ public class Semantics {
 
 		Finalize();
 		return result;
+	}
+
+	private static String positionString(AST target) {
+		Pair<Integer, Integer> pos = target.getPosition();
+		return "Line " + (pos.getKey() + 1) + " Column " + (pos.getValue() + 1);
 	}
 
 	/**  semanticsInitialize - called once by the parser at the      */
@@ -155,11 +162,9 @@ public class Semantics {
 		   result = handleSpecialActions(actionNumber, target);
 	   } else if(actionNumber >= 50) { // Statement Checking
 		   result = handleStatementActions(actionNumber, target);
-	   } else if(actionNumber >= 40 && actionNumber <= 45) { // Functions, procedures and arguments
+	   } else if(actionNumber <= 45) { // Functions, procedures and arguments
 		   result = handleCallActions(actionNumber, target);
 	   }
-
-	   System.out.println("Semantic Action: S" + actionNumber  );
 	   return result;
 	}
 
@@ -177,26 +182,26 @@ public class Semantics {
 		} else if(actionNumber == 56) {
 			funcInfo.set(funcInfo.size() - 1, new Pair<>(funcInfo.peek().getKey(), funcInfo.peek().getValue() - 1));
 			if(funcInfo.peek().getValue() < 0) {
-				System.err.println("Cannot leave loop - not enough loops started");
+				System.err.println("Cannot leave loop - not enough loops started. " + positionString(target));
 				return false;
 			} else {
 				return true;
 			}
 		} else if(actionNumber == 57) {
-			System.err.println("Identifier is not a routine or a variable!");
+			System.err.println("Identifier is not a routine or a variable! " + positionString(target));
 			return false;
 		} else if(actionNumber == 58) {
 			// Does the subscript have the correct number of dimensions for the array.
 			SubsExpn subs = (SubsExpn)target;
 			Symbol sym = getScopeSymbol(subs.getVariable());
 			if(sym == null) {
-				System.err.println("Array does not exist!");
+				System.err.println("Array does not exist! " + positionString(target));
 				return false;
 			} else if(sym.bounds == null) {
-				System.err.println("Symbol is not an array!");
+				System.err.println("Symbol is not an array! " + positionString(target));
 				return false;
 			} else if(sym.bounds.is2d != (subs.numSubscripts() == 2)) {
-				System.err.println("Array subscript uses the wrong number of dimensions!");
+				System.err.println("Array subscript uses the wrong number of dimensions! " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -210,10 +215,10 @@ public class Semantics {
 				IdentExpn i = (IdentExpn) target;
 				Symbol sym = getScopeSymbol(i.getIdent());
 				if(sym == null) {
-					System.err.println("Symbol does not exist!");
+					System.err.println("Symbol does not exist! " + positionString(target));
 					return false;
 				} else if(sym.type != Symbol.SymbolType.Scalar) {
-					System.err.println("Cannot assign to function!");
+					System.err.println("Cannot assign to function! " + positionString(target));
 					return false;
 				} else {
 					return true;
@@ -275,7 +280,7 @@ public class Semantics {
 				currentScope.addSymbol(decl.getName(), new Symbol(Symbol.DTFromAST(decl.getType())));
 				return true;
 			} catch (RuntimeException ex) {
-				System.err.println(ex.getMessage());
+				System.err.println(ex.getMessage() + " " + positionString(target));
 				return false;
 			}
 		} else if(actionNumber == 10) {
@@ -286,7 +291,7 @@ public class Semantics {
 				partsAwaitingType.add(s);
 				return true;
 			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
+				System.err.println(ex.getMessage() + " " + positionString(target));
 				return false;
 			}
 		} else if(actionNumber == 11 || actionNumber == 12
@@ -301,7 +306,7 @@ public class Semantics {
 				currentScope.addSymbol(decl.getName(), lastRoutine);
 				return true;
 			} catch(RuntimeException ex) {
-				System.err.println(ex.getMessage());
+				System.err.println(ex.getMessage() + " " + positionString(target));
 				lastRoutine = null;
 				return false;
 			}
@@ -320,7 +325,7 @@ public class Semantics {
 				partsAwaitingType.add(s);
 				return true;
 			} catch (RuntimeException ex) {
-				System.err.println(ex.getMessage());
+				System.err.println(ex.getMessage() + " " + positionString(target));
 				return false;
 			}
 		} else if(actionNumber == 46) {
@@ -328,7 +333,7 @@ public class Semantics {
 			boolean result = part.getLowerBoundary1() <= part.getUpperBoundary1();
 			result &= (!part.getTwoDimensional() || part.getLowerBoundary2() <= part.getUpperBoundary2());
 			if(!result) {
-				System.err.println("Boundaries of array are invalid!");
+				System.err.println("Boundaries of array are invalid! " + positionString(target));
 				return false;
 			}
 			return true;
@@ -440,21 +445,21 @@ public class Semantics {
 		}
 		if(actionNumber == 50) {
 			if(funcInfo.peek().getValue() <= 0) {
-				System.err.println("Cannot exit from loops, as we are not directly in a loop!");
+				System.err.println("Cannot exit from loops, as we are not directly in a loop! " + positionString(target));
 				return false;
 			} else {
 				return true;
 			}
 		} else if(actionNumber == 51) {
 			if(funcInfo.peek().getKey() == null || funcInfo.peek().getKey().resultantType == None) {
-				System.err.println("This is not a function! Cannot return with result");
+				System.err.println("This is not a function! Cannot return with result. " + positionString(target));
 				return false;
 			} else {
 				return true;
 			}
 		} else if(actionNumber == 52) {
 			if(funcInfo.peek().getKey() == null || funcInfo.peek().getKey().resultantType != None) {
-				System.err.println("This is not a procedure! Cannot return with no result");
+				System.err.println("This is not a procedure! Cannot return with no result. " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -462,23 +467,19 @@ public class Semantics {
 		} else if(actionNumber == 53) {
 			ExitStmt exit = (ExitStmt)target;
 			if(!(0 < exit.getLevel() && exit.getLevel() <= funcInfo.peek().getValue())) {
-				System.err.println("Invalid number of loop levels to exit provided!");
+				System.err.println("Invalid number of loop levels to exit provided! " + positionString(target));
 				return false;
 			} else {
 				return true;
 			}
 		} else {
-			// TODO: This is wrong, redo
 			Scope s = (Scope) target;
-			Stmt retStmt = null;
-			for(Stmt stmt : s.getStatements()) {
-				if(stmt instanceof ReturnStmt) {
-					retStmt = stmt;
-					break;
-				}
+			if(!s.hasReturn()) {
+				System.err.println("Control flow of function can reach end of function. Needs return statement. " + positionString(target));
+				return false;
+			} else {
+				return true;
 			}
-			assert retStmt != null;
-			return true;
 		}
 	}
 
@@ -497,10 +498,10 @@ public class Semantics {
 				sym = getScopeSymbol(call.getIdent());
 			}
 			if(sym == null) {
-				System.err.println("Function not found!");
+				System.err.println("Function not found! " + positionString(target));
 				return false;
 			} else if(sym.type != Symbol.SymbolType.Routine || sym.resultantType == None) {
-				System.err.println("Symbol is not a function!");
+				System.err.println("Symbol is not a function! " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -509,10 +510,10 @@ public class Semantics {
 			ProcedureCallStmt call = (ProcedureCallStmt)target;
 			Symbol sym = getScopeSymbol(call.getName());
 			if(sym == null) {
-				System.err.println("Procedure not found!");
+				System.err.println("Procedure not found! " + positionString(target));
 				return false;
 			} else if(sym.type != Symbol.SymbolType.Routine || sym.resultantType != None) {
-				System.err.println("Symbol is not a procedure!");
+				System.err.println("Symbol is not a procedure! " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -528,13 +529,13 @@ public class Semantics {
 				sym = getScopeSymbol(call.getName());
 			}
 			if(sym == null) {
-				System.err.println("Function/Procedure not found!");
+				System.err.println("Function/Procedure not found! " + positionString(target));
 				return false;
 			} else if(sym.parameters == null) {
-				System.err.println("Symbol is not a function/procedure!");
+				System.err.println("Symbol is not a function/procedure! " + positionString(target));
 				return false;
 			} else if(sym.parameters.size() != 0) {
-				System.err.println("Function/procedure has parameters - cannot call without any parameters.");
+				System.err.println("Function/procedure has parameters - cannot call without any parameters. " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -553,13 +554,13 @@ public class Semantics {
 				providedCount = call.getArguments().size();
 			}
 			if(sym == null) {
-				System.err.println("Function/Procedure not found!");
+				System.err.println("Function/Procedure not found! " + positionString(target));
 				return false;
 			} else if(sym.parameters == null) {
-				System.err.println("Symbol is not a function/procedure!");
+				System.err.println("Symbol is not a function/procedure! " + positionString(target));
 				return false;
 			} else if(sym.parameters.size() != providedCount) {
-				System.err.println("Function/procedure has a different number of arguments than what was provided.");
+				System.err.println("Function/procedure has a different number of arguments than what was provided. " + positionString(target));
 				return false;
 			} else {
 				return true;
@@ -575,7 +576,7 @@ public class Semantics {
 			}
 			callArg = 0;
 			if(checkingCall == null) {
-				System.err.println("Symbol not found for function/procedure to check.");
+				System.err.println("Symbol not found for function/procedure to check. " + positionString(target));
 				return false;
 			} else {
 				return true;
