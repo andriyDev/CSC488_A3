@@ -399,17 +399,13 @@ public class Semantics {
 				return true;
 			}
 		} else {
-			// TODO: This is wrong, redo
 			Scope s = (Scope) target;
-			Stmt retStmt = null;
-			for(Stmt stmt : s.getStatements()) {
-				if(stmt instanceof ReturnStmt) {
-					retStmt = stmt;
-					break;
-				}
+			if(!s.hasReturn()) {
+				System.err.println("Control flow of function can reach end of function. Needs return statement. " + positionString(target));
+				return false;
+			} else {
+				return true;
 			}
-			assert retStmt != null;
-			return true;
 		}
 	}
 

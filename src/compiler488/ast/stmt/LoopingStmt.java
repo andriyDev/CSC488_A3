@@ -31,4 +31,14 @@ public abstract class LoopingStmt extends Stmt {
 	public ASTList<Stmt> getBody() {
 		return body;
 	}
+
+	@Override
+	public boolean hasReturn() {
+		for(Stmt s : body) {
+			if(s.hasReturn()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

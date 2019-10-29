@@ -58,4 +58,9 @@ public class ReturnStmt extends Stmt {
 		}
 		return result;
 	}
+
+	@Override
+	public boolean hasReturn() {
+		return true;
+	}
 }

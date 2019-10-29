@@ -73,4 +73,14 @@ public class Scope extends Stmt {
 		}
 		return result;
 	}
+
+	@Override
+	public boolean hasReturn() {
+		for(Stmt stmt : statements) {
+			if(stmt.hasReturn()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

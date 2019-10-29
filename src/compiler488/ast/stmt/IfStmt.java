@@ -73,4 +73,12 @@ public class IfStmt extends Stmt {
 		}
 		return result;
 	}
+
+	@Override
+	public boolean hasReturn() {
+		if(whenFalse == null) {
+			return false;
+		}
+		return whenTrue.hasReturn() && whenFalse.hasReturn();
+	}
 }
