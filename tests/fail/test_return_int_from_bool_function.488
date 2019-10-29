@@ -2,4 +2,5 @@
     function f : boolean {
         return with 0
     }
+    write 0
 }

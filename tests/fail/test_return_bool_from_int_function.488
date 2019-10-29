@@ -2,4 +2,5 @@
     function f : integer {
         return with true
     }
+    write 0
 }

@@ -44,6 +44,7 @@ for filename in tests/fail/*.488; do
     if [ -n "$ERROR" ]
     then
         echo -n -e "PASSED\n"
+        echo "$ERROR"
     else
         echo -n -e "FAILED\n"
     fi
