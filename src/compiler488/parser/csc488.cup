@@ -9,6 +9,7 @@ import compiler488.ast.expn.*;
 import compiler488.ast.decl.*;
 import compiler488.ast.stmt.*;
 import compiler488.ast.type.*;
+import compiler488.ast.Readable;
 // TODO: You can add Java import statements here as necessary
 
 /*
@@ -76,7 +77,7 @@ nonterminal ASTList<Expn> arguments;
 nonterminal Expn expression; 
 nonterminal Expn variable;
 
-nonterminal	ASTList<Readable> inputs; 
+nonterminal	ASTList<Readable> inputs;
 
 nonterminal Integer[] bound; 
 nonterminal Integer generalBound;
@@ -267,9 +268,25 @@ output
 
 inputs
     ::= variable:v                    // list of variables being read into
-            {: RESULT = new ASTList(v); :}
+            {:
+                if(v instanceof SubsExpn) {
+                    RESULT = new ASTList((SubsExpn)v);
+                } else if(v instanceof IdentExpn) {
+                    RESULT = new ASTList((IdentExpn)v);
+                } else {
+                    throw new RuntimeException("Cannot read from expression!");
+                }
+            :}
     |   inputs:v_list COMMA variable:v
-            {: RESULT = v_list.append(v); :}
+            {:
+                if(v instanceof SubsExpn) {
+                    RESULT = v_list.append((SubsExpn)v);
+                } else if(v instanceof IdentExpn) {
+                    RESULT = v_list.append((IdentExpn)v);
+                } else {
+                    throw new RuntimeException("Cannot read from expression!");
+                }
+            :}
     ;
 
 arguments
