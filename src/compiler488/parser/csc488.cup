@@ -50,17 +50,47 @@ terminal String     TEXTCONST;
 */
 
  
-nonterminal	program,	statement,	declaration,	scope	;
-nonterminal	statements,	declarations,	matchedStatement, unmatchedStatement ;
-nonterminal	variablenames,		output			;
-nonterminal	type,	parameters	;
+nonterminal	Program program; 
+nonterminal Stmt statement;	
+nonterminal Declaration declaration;
+nonterminal	Scope scope;
+
+nonterminal	ASTList<Stmt> statements;	
+nonterminal ASTList<Declaration> declarations;	
+
+nonterminal Stmt matchedStatement; 
+nonterminal Stmt unmatchedStatement;
+
+nonterminal	ASTList<DeclarationPart> variablenames;		
+nonterminal DeclarationPart variablename;
+
+nonterminal ASTList<Printable> outputs; 
+nonterminal Printable output;
+
+nonterminal	Type type;	
+
+nonterminal ASTList<ScalarDecl> parameters;
+nonterminal ScalarDecl parameter;
+
 nonterminal ASTList<Expn> arguments;
-nonterminal Expn expression, variable ;
-nonterminal variablename ;
-nonterminal	inputs, outputs, bound , generalBound ;
-nonterminal	procedureCall, parameter ;
-nonterminal Expn conjunction, negation, compareExpn;
-nonterminal	Expn arithExpn, term, factor, primary, constant ;
+nonterminal Expn expression; 
+nonterminal Expn variable;
+
+nonterminal	ASTList<Readable> inputs; 
+
+nonterminal Integer[] bound; 
+nonterminal Integer generalBound;
+nonterminal	ProcedureCallStmt procedureCall; 
+
+nonterminal Expn conjunction; 
+nonterminal Expn negation;
+
+nonterminal Expn compareExpn;
+nonterminal	Expn arithExpn; 
+nonterminal Expn term; 
+nonterminal Expn factor; 
+nonterminal Expn primary; 
+nonterminal Expn constant;
  
 
 /*
@@ -90,119 +120,175 @@ start with program;
     will act on the production.
  */
 
-program ::= scope                           // the main program
+program ::= scope:scope                             // the main program
+                {: RESULT = new Program(scope); :}
     ;
 
 scope
-    ::= L_CURLEY declarations statements R_CURLEY   // scope with declarations and statements
-    |   L_CURLEY statements R_CURLEY                // scope with statements only
-    |   L_CURLEY R_CURLEY                           // empty scope
+    ::= L_CURLEY declarations:decls statements:stmts R_CURLEY   // scope with declarations and statements
+            {: RESULT = new Scope(decls, stmts); :}
+    |   L_CURLEY statements:stmts R_CURLEY                      // scope with statements only
+            {: RESULT = new Scope(null, stmts); :}
+    |   L_CURLEY R_CURLEY                                       // empty scope
+            {: RESULT = new Scope(null, null); :}
     ;
 
 statements
-    ::= statement                       // sequence of statements
-    |   statements statement
+    ::= statement:stmt                          // sequence of statements
+            {: RESULT = new ASTList(stmt); :}
+    |   statements:stmt_list statement:stmt
+            {: RESULT = stmt_list.append(stmt); :}
     ;
 
 declarations
-    ::= declaration                     // sequence of declarations
-    |   declarations declaration
+    ::= declaration:d                           // sequence of declarations
+            {: RESULT = new ASTList(d); :}
+    |   declarations:dcl_list declaration:d
+            {: RESULT = dcl_list.append(d); :}
     ;
 
 statement
-    ::= matchedStatement
-    |   unmatchedStatement
+    ::= matchedStatement:stmt
+            {: RESULT = stmt; :}
+    |   unmatchedStatement:stmt
+            {: RESULT = stmt; :}
     ;
 
 matchedStatement
-    ::= variable COLON EQUAL expression                             // assignment statement
-    |   IF expression THEN matchedStatement ELSE matchedStatement   // if statements
-    |   WHILE expression DO statement                               // while statement
-    |   REPEAT statements UNTIL expression                           // repeat statement
-    |   EXIT                                                        // exit statements
-    |   EXIT INTCONST
-    |   EXIT WHEN expression
-    |   EXIT INTCONST WHEN expression
-    |   RETURN WITH expression
+    ::= variable:v COLON EQUAL expression:e                             // assignment statement
+            {: RESULT = new AssignStmt(v, e); :}
+    |   IF expression:e THEN matchedStatement:true_stmt ELSE matchedStatement:false_stmt   // if statements
+            {: RESULT = new IfStmt(e, true_stmt, false_stmt); :}
+    |   WHILE expression:e DO statement:stmt                        // while statement
+            {: RESULT = new WhileDoStmt(e, new ASTList(stmt)); :}
+    |   REPEAT statements:stmt_list UNTIL expression:e              // repeat statement
+            {: RESULT = new RepeatUntilStmt(e, stmt_list); :}
+    |   EXIT                                                         // exit statements
+            {: RESULT = new ExitStmt(); :}
+    |   EXIT INTCONST:i
+            {: RESULT = new ExitStmt(i); :}
+    |   EXIT WHEN expression:e
+            {: RESULT = new ExitStmt(e); :}
+    |   EXIT INTCONST:i WHEN expression:e
+            {: RESULT = new ExitStmt(i, e); :}
+    |   RETURN WITH expression:e
+            {: RESULT = new ReturnStmt(e); :}
     |   RETURN                                                      // return statements
-    |   WRITE outputs                                               // input/output statements
-    |   READ inputs
-    |   procedureCall                                               // procedure call
-    |   scope                                                       // embedded scope
+            {: RESULT = new ReturnStmt(); :}
+    |   WRITE outputs:o_list                                        // input/output statements
+            {: RESULT = new WriteStmt(o_list); :}
+    |   READ inputs:i_list
+            {: RESULT = new ReadStmt(i_list); :}
+    |   procedureCall:p                                               // procedure call
+            {: RESULT = p; :}
+    |   scope:scope                                                   // embedded scope
+            {: RESULT = scope; :}
     ;
 
 unmatchedStatement
-    ::= IF expression THEN statement
-    |   IF expression THEN matchedStatement ELSE unmatchedStatement
+    ::= IF expression:cond THEN statement:stmt_true
+            {: RESULT = new IfStmt(cond, stmt_true); :}
+    |   IF expression:cond THEN matchedStatement:stmt_true ELSE unmatchedStatement:stmt_false
+            {: RESULT = new IfStmt(cond, stmt_true, stmt_false); :}
     ;
 
 procedureCall
-    ::= IDENT                                       // call procedure with no parameters
-    |   IDENT L_PAREN arguments R_PAREN             // call procedure with parameters
+    ::= IDENT:i                                     // call procedure with no parameters
+            {: RESULT = new ProcedureCallStmt(i); :}  
+    |   IDENT:i L_PAREN arguments:a R_PAREN             // call procedure with parameters
+            {: RESULT = new ProcedureCallStmt(i, a); :}
     ;
 
 declaration
-    ::= VAR variablenames COLON type                                // declare scalar/array variables
-    | FUNCTION IDENT COLON type scope                               // declare function
-    | FUNCTION IDENT L_PAREN parameters R_PAREN COLON type scope
-    | PROCEDURE IDENT scope                                         // declare procedure
-    | PROCEDURE IDENT L_PAREN parameters R_PAREN scope
+    ::= VAR variablenames:var_list COLON type:t                     // declare scalar/array variables
+            {: RESULT = new MultiDeclarations(t, var_list); :}
+    | FUNCTION IDENT:f_name COLON type:t scope:body                 // declare function
+            {: RESULT = new RoutineDecl(f_name, t, body); :}
+    | FUNCTION IDENT:f_name L_PAREN parameters:param_list R_PAREN COLON type:t scope:body
+            {: RESULT = new RoutineDecl(f_name, t, param_list, body); :}
+    | PROCEDURE IDENT:p_name scope:body                             // declare procedure
+            {: RESULT = new RoutineDecl(p_name, body); :}
+    | PROCEDURE IDENT:p_name L_PAREN parameters:param_list R_PAREN scope:body
+            {: RESULT = new RoutineDecl(p_name, param_list, body); :}
     ;
 
 variablenames
-    ::= variablename                                // list of variables being declared
-    |   variablenames COMMA variablename
+    ::= variablename:v                                // list of variables being declared
+            {: RESULT = new ASTList(v); :}
+    |   variablenames:var_list COMMA variablename:v
+            {: RESULT = var_list.append(v); :}
     ;
 
 variablename
-    ::= IDENT                                       // scalar variable
-    |   IDENT L_SQUARE bound R_SQUARE               // 1-dimension array variable
-    |   IDENT L_SQUARE bound COMMA bound R_SQUARE   // 2-dimensional array variable
+    ::= IDENT:i                                                  // scalar variable
+            {: RESULT = new ScalarDeclPart(i); :}
+    |   IDENT:arr1d L_SQUARE bound:b1 R_SQUARE                   // 1-dimension array variable
+            {: RESULT = new ArrayDeclPart(arr1d, b1[0], b1[1]); :}
+    |   IDENT:arr2d L_SQUARE bound:b1 COMMA bound:b2 R_SQUARE    // 2-dimensional array variable
+            {: RESULT = new ArrayDeclPart(arr2d, b1[0], b1[1], b2[0], b2[1]); :}
     ;
 
 bound
-    ::= INTCONST                                    // positive array bound
-    |   generalBound DOT DOT generalBound           // upper and lower bounds
+    ::= INTCONST:i                                  // positive array bound
+            {: RESULT = new Integer[] {1, i}; :}
+    |   generalBound:lb DOT DOT generalBound:ub     // upper and lower bounds
+            {: RESULT = new Integer[] {lb, ub}; :}
     ;
 
 generalBound
-    ::= INTCONST                    // positive integer bounds
-    |   MINUS INTCONST              // negative integer bounds
+    ::= INTCONST:i                    // positive integer bounds
+            {: RESULT = i; :}
+    |   MINUS INTCONST:i              // negative integer bounds
+            {: RESULT = -i; :}
     ;
 
 type
-    ::= INTEGER                     // integer type
-    |   BOOLEAN                     // boolean type
+    ::= INTEGER:i                     // integer type
+            {: RESULT = new IntegerType(); :}
+    |   BOOLEAN:b                     // boolean type
+            {: RESULT = new BooleanType(); :}
     ;
 
 outputs
-    ::= output                      // list of output expressions
-    |   outputs COMMA output
+    ::= output:o                      // list of output expressions
+            {: RESULT = new ASTList(o); :}
+    |   outputs:o_list COMMA output:o
+            {: RESULT = o_list.append(o); :}
     ;
 
 output
-    ::= expression                  // integer expression
-    |   TEXTCONST                   // text constant
-    |   NEWLINE                     // newline constant
+    ::= expression:e                  // integer expression
+            {: RESULT = e; :}
+    |   TEXTCONST:t                   // text constant
+            {: RESULT = new TextConstExpn(t); :}
+    |   NEWLINE:n                     // newline constant
+            {: RESULT = new SkipConstExpn(); :}
     ;
 
 inputs
-    ::= variable                    // list of variables being read into
-    |   inputs COMMA variable
+    ::= variable:v                    // list of variables being read into
+            {: RESULT = new ASTList(v); :}
+    |   inputs:v_list COMMA variable:v
+            {: RESULT = v_list.append(v); :}
     ;
 
 arguments
-    ::= expression                  // list of function/procedure arguments
-    |   arguments COMMA expression
+    ::= expression:e                  // list of function/procedure arguments
+            {: RESULT = new ASTList(e); :}
+    |   arguments:a_list COMMA expression:e
+            {: RESULT = a_list.append(e); :}
     ;
 
 parameters
-    ::= parameter                   // list of function/procedure formal parameters
-    |   parameters COMMA parameter
+    ::= parameter:p                   // list of function/procedure formal parameters
+            {: RESULT = new ASTList<ScalarDecl>(p); :}
+    |   parameters:p_list COMMA parameter:p
+            {: RESULT = p_list.append(p); :}
     ;
 
 parameter
-    ::= IDENT COLON type            // declare one parameter
+    ::= IDENT:i COLON type:t            // declare one parameter
+            {: RESULT = new ScalarDecl(i, t); :}
     ;
 
 expression
