@@ -391,7 +391,6 @@ public class Semantics {
 		} else if (actionNumber == 26) {
 
 		} else if (actionNumber == 27) {
-			AST arrayDecl = (ArrayDeclPart)target;
 
 		} else if (actionNumber == 28) {
 
@@ -401,8 +400,6 @@ public class Semantics {
 	}
 
 	private boolean handleExprTypeCheckActions(int actionNumber, AST target) {
-		SymbolTable.SymbolScope currentScope = scopes.peek().getValue();
-
 		if (actionNumber == 30) {
 			BoolExpn expn = (BoolExpn) target;
 			if (expns.containsKey(expn)) {
