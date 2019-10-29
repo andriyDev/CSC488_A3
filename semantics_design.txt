@@ -1,4 +1,5 @@
-Added a semantic action to increment and decrement the current number of loops when entering a loop and exiting a loop.
-Added a semantic action to check whether a subscript has the same number of dimensions as the array definition.
-Added a semantic action for checking if an expression is assignable.
-Semantic action 54 had undefined behaviour, since just one return statement does not guarantee that a function will terminate, so the check was expanded to ensure that the function definitely returns at some point. If this does not happen, it is a semantic error.
+For our semantic analyzer, we decided to use a hybrid of two methods. We traverse our AST by simply calling AST.performSemanticAnalysis. This is recursively called on subtrees. In addition, these methods dispatch actions through Semantics.semanticAction. In this way, we get the advantages of a recursive structure, while keeping all the partial data in one spot, allowing for easy access. AST.performSemanticAnalysis usually follows the provided semantics.pdf closely, although in some instances the ordering of the actions were changed, and in some, certain actions became unnecessary. Some actions also required a few more actions. Here are some decisions we made in regard to implementing the semantic analysis:
+    - Added a semantic action to increment and decrement the current number of loops when entering a loop and exiting a loop.
+    - Added a semantic action to check whether a subscript has the same number of dimensions as the array definition.
+    - Added a semantic action for checking if an expression is assignable.
+    - Semantic action 54 had undefined behaviour, since just one return statement does not guarantee that a function will terminate, so the check was expanded to ensure that the function definitely returns at some point. If this does not happen, it is a semantic error. A "hasReturn" method was added to the Stmt class.
