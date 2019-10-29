@@ -15,7 +15,8 @@
 
 	function func_with_val_int (in_int_val : integer, in_bool_val : boolean) : boolean 
     { 
-        var x := 1
+        var x : integer
+        x := 1
         while x < in_int_val do
         {
             if in_bool_val then { exit }
