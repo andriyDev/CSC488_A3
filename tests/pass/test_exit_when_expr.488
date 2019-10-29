@@ -1,0 +1,13 @@
+{
+    var x : boolean
+
+    while true do
+    {
+        exit when true
+    }
+
+    repeat
+    {
+        exit when false
+    } until not (x and true)
+}

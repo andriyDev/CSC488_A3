@@ -1,0 +1,16 @@
+{
+    var x_1, x_2 : integer;
+
+    function func(in_int_val : integer) : integer { return with in_int_val }
+
+    x_1 := 6
+    x_2 := 4
+
+    write newline
+    write "123"
+    write "abc", newline, x
+
+    write (x_1 = x_2 ? x_1 * x_2 : x_1)
+    
+    write func(5)
+}

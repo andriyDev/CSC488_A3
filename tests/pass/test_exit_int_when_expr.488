@@ -1,0 +1,13 @@
+{
+    while true do
+    {
+        exit 1 when true
+    }
+
+    while true do
+        while true do
+            while true do
+            {
+                exit 3 when false
+            }
+}
