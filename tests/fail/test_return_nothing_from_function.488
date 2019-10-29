@@ -1,0 +1,6 @@
+{
+    function f : integer {
+        return
+    }
+    write 0
+}

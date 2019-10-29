@@ -1,0 +1,6 @@
+{
+    function f : integer {
+        return with 0
+    }
+    read f
+}

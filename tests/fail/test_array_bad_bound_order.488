@@ -1,0 +1,4 @@
+{
+    var x[3..0] : integer
+    write 0
+}

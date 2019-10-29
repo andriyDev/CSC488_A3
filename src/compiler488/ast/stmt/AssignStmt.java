@@ -42,7 +42,7 @@ public class AssignStmt extends Stmt {
 		result = lval.performSemanticAnalysis(s);
 		result &= rval.performSemanticAnalysis(s);
 		result &= s.semanticAction(34, this);
-		result &= s.semanticAction(59, this);
+		result &= s.semanticAction(59, lval);
 		return result;
 	}
 }

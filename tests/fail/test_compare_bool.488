@@ -1,0 +1,4 @@
+{
+    var x : boolean
+    x := false < true
+}
