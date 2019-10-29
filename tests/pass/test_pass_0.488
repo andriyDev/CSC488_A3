@@ -1,0 +1,8 @@
+{
+    var hello : integer
+    function hola : integer {
+        return with 7
+    }
+
+    write hola, " Some text"
+}

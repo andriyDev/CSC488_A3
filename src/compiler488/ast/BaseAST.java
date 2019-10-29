@@ -1,6 +1,7 @@
 package compiler488.ast;
 
 import compiler488.semantics.Semantics;
+import compiler488.Pair;
 
 /**
  * Base class implementation for the AST hierarchy.
@@ -18,6 +19,24 @@ public abstract class BaseAST implements AST {
 	 * </p>
 	 */
 	public BaseAST() {
+	}
+
+	public int line;
+	public int column;
+
+	public void setPosition(int line, int column) {
+		this.line = line;
+		this.column = column;
+	}
+
+	public void setPosition(BaseAST other) {
+		Pair<Integer, Integer> i = other.getPosition();
+		this.line = i.getKey();
+		this.column = i.getValue();
+	}
+
+	public Pair<Integer, Integer> getPosition() {
+		return new Pair<>(line, column);
 	}
 
 	/**

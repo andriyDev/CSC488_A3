@@ -1,6 +1,7 @@
 package compiler488.ast;
 
 import compiler488.semantics.Semantics;
+import compiler488.Pair;
 
 import java.util.LinkedList;
 
@@ -73,6 +74,14 @@ public class ASTList<E extends AST> extends LinkedList<E> implements AST {
 	@Override
 	public boolean performSemanticAnalysis(Semantics s) {
 		return true;
+	}
+
+	public Pair<Integer, Integer> getPosition() {
+		if(size() == 0) {
+			return new Pair<>(0,0);
+		} else {
+			return get(0).getPosition();
+		}
 	}
 
 	/**

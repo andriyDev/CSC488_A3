@@ -122,16 +122,16 @@ start with program;
  */
 
 program ::= scope:scope                             // the main program
-                {: RESULT = new Program(scope); :}
+                {: RESULT = new Program(scope); RESULT.setPosition(scope); :}
     ;
 
 scope
-    ::= L_CURLEY declarations:decls statements:stmts R_CURLEY   // scope with declarations and statements
-            {: RESULT = new Scope(decls, stmts); :}
-    |   L_CURLEY statements:stmts R_CURLEY                      // scope with statements only
-            {: RESULT = new Scope(null, stmts); :}
-    |   L_CURLEY R_CURLEY                                       // empty scope
-            {: RESULT = new Scope(null, null); :}
+    ::= L_CURLEY:p declarations:decls statements:stmts R_CURLEY   // scope with declarations and statements
+            {: RESULT = new Scope(decls, stmts); RESULT.setPosition(pleft, pright); :}
+    |   L_CURLEY:p statements:stmts R_CURLEY                      // scope with statements only
+            {: RESULT = new Scope(null, stmts); RESULT.setPosition(pleft, pright); :}
+    |   L_CURLEY:p R_CURLEY                                       // empty scope
+            {: RESULT = new Scope(null, null); RESULT.setPosition(pleft, pright); :}
     ;
 
 statements
@@ -156,30 +156,30 @@ statement
     ;
 
 matchedStatement
-    ::= variable:v COLON EQUAL expression:e                             // assignment statement
-            {: RESULT = new AssignStmt(v, e); :}
-    |   IF expression:e THEN matchedStatement:true_stmt ELSE matchedStatement:false_stmt   // if statements
-            {: RESULT = new IfStmt(e, true_stmt, false_stmt); :}
-    |   WHILE expression:e DO statement:stmt                        // while statement
-            {: RESULT = new WhileDoStmt(e, new ASTList(stmt)); :}
-    |   REPEAT statements:stmt_list UNTIL expression:e              // repeat statement
-            {: RESULT = new RepeatUntilStmt(e, stmt_list); :}
-    |   EXIT                                                         // exit statements
-            {: RESULT = new ExitStmt(); :}
-    |   EXIT INTCONST:i
-            {: RESULT = new ExitStmt(i); :}
-    |   EXIT WHEN expression:e
-            {: RESULT = new ExitStmt(e); :}
-    |   EXIT INTCONST:i WHEN expression:e
-            {: RESULT = new ExitStmt(i, e); :}
-    |   RETURN WITH expression:e
-            {: RESULT = new ReturnStmt(e); :}
-    |   RETURN                                                      // return statements
-            {: RESULT = new ReturnStmt(); :}
-    |   WRITE outputs:o_list                                        // input/output statements
-            {: RESULT = new WriteStmt(o_list); :}
-    |   READ inputs:i_list
-            {: RESULT = new ReadStmt(i_list); :}
+    ::= variable:v COLON EQUAL:p expression:e                             // assignment statement
+            {: RESULT = new AssignStmt(v, e); RESULT.setPosition(pleft, pright); :}
+    |   IF:p expression:e THEN matchedStatement:true_stmt ELSE matchedStatement:false_stmt   // if statements
+            {: RESULT = new IfStmt(e, true_stmt, false_stmt); RESULT.setPosition(pleft, pright); :}
+    |   WHILE:p expression:e DO statement:stmt                        // while statement
+            {: RESULT = new WhileDoStmt(e, new ASTList(stmt)); RESULT.setPosition(pleft, pright); :}
+    |   REPEAT:p statements:stmt_list UNTIL expression:e              // repeat statement
+            {: RESULT = new RepeatUntilStmt(e, stmt_list); RESULT.setPosition(pleft, pright); :}
+    |   EXIT:p                                                         // exit statements
+            {: RESULT = new ExitStmt(); RESULT.setPosition(pleft, pright); :}
+    |   EXIT:p INTCONST:i
+            {: RESULT = new ExitStmt(i); RESULT.setPosition(pleft, pright); :}
+    |   EXIT:p WHEN expression:e
+            {: RESULT = new ExitStmt(e); RESULT.setPosition(pleft, pright); :}
+    |   EXIT:p INTCONST:i WHEN expression:e
+            {: RESULT = new ExitStmt(i, e); RESULT.setPosition(pleft, pright); :}
+    |   RETURN:p WITH expression:e
+            {: RESULT = new ReturnStmt(e); RESULT.setPosition(pleft, pright); :}
+    |   RETURN:p                                                      // return statements
+            {: RESULT = new ReturnStmt(); RESULT.setPosition(pleft, pright); :}
+    |   WRITE:p outputs:o_list                                        // input/output statements
+            {: RESULT = new WriteStmt(o_list); RESULT.setPosition(pleft, pright); :}
+    |   READ:p inputs:i_list
+            {: RESULT = new ReadStmt(i_list); RESULT.setPosition(pleft, pright); :}
     |   procedureCall:p                                               // procedure call
             {: RESULT = p; :}
     |   scope:scope                                                   // embedded scope
@@ -187,30 +187,30 @@ matchedStatement
     ;
 
 unmatchedStatement
-    ::= IF expression:cond THEN statement:stmt_true
-            {: RESULT = new IfStmt(cond, stmt_true); :}
-    |   IF expression:cond THEN matchedStatement:stmt_true ELSE unmatchedStatement:stmt_false
-            {: RESULT = new IfStmt(cond, stmt_true, stmt_false); :}
+    ::= IF:p expression:cond THEN statement:stmt_true
+            {: RESULT = new IfStmt(cond, stmt_true); RESULT.setPosition(pleft, pright); :}
+    |   IF:p expression:cond THEN matchedStatement:stmt_true ELSE unmatchedStatement:stmt_false
+            {: RESULT = new IfStmt(cond, stmt_true, stmt_false); RESULT.setPosition(pleft, pright); :}
     ;
 
 procedureCall
     ::= IDENT:i                                     // call procedure with no parameters
-            {: RESULT = new ProcedureCallStmt(i); :}  
+            {: RESULT = new ProcedureCallStmt(i); RESULT.setPosition(ileft, iright); :}
     |   IDENT:i L_PAREN arguments:a R_PAREN             // call procedure with parameters
-            {: RESULT = new ProcedureCallStmt(i, a); :}
+            {: RESULT = new ProcedureCallStmt(i, a); RESULT.setPosition(ileft, iright); :}
     ;
 
 declaration
-    ::= VAR variablenames:var_list COLON type:t                     // declare scalar/array variables
-            {: RESULT = new MultiDeclarations(t, var_list); :}
-    | FUNCTION IDENT:f_name COLON type:t scope:body                 // declare function
-            {: RESULT = new RoutineDecl(f_name, t, body); :}
-    | FUNCTION IDENT:f_name L_PAREN parameters:param_list R_PAREN COLON type:t scope:body
-            {: RESULT = new RoutineDecl(f_name, t, param_list, body); :}
-    | PROCEDURE IDENT:p_name scope:body                             // declare procedure
-            {: RESULT = new RoutineDecl(p_name, body); :}
-    | PROCEDURE IDENT:p_name L_PAREN parameters:param_list R_PAREN scope:body
-            {: RESULT = new RoutineDecl(p_name, param_list, body); :}
+    ::= VAR:p variablenames:var_list COLON type:t                     // declare scalar/array variables
+            {: RESULT = new MultiDeclarations(t, var_list); RESULT.setPosition(pleft, pright); :}
+    | FUNCTION:p IDENT:f_name COLON type:t scope:body                 // declare function
+            {: RESULT = new RoutineDecl(f_name, t, body); RESULT.setPosition(pleft, pright); :}
+    | FUNCTION:p IDENT:f_name L_PAREN parameters:param_list R_PAREN COLON type:t scope:body
+            {: RESULT = new RoutineDecl(f_name, t, param_list, body); RESULT.setPosition(pleft, pright); :}
+    | PROCEDURE:p IDENT:p_name scope:body                             // declare procedure
+            {: RESULT = new RoutineDecl(p_name, body); RESULT.setPosition(pleft, pright); :}
+    | PROCEDURE:p IDENT:p_name L_PAREN parameters:param_list R_PAREN scope:body
+            {: RESULT = new RoutineDecl(p_name, param_list, body); RESULT.setPosition(pleft, pright); :}
     ;
 
 variablenames
@@ -222,11 +222,11 @@ variablenames
 
 variablename
     ::= IDENT:i                                                  // scalar variable
-            {: RESULT = new ScalarDeclPart(i); :}
+            {: RESULT = new ScalarDeclPart(i); RESULT.setPosition(ileft, iright); :}
     |   IDENT:arr1d L_SQUARE bound:b1 R_SQUARE                   // 1-dimension array variable
-            {: RESULT = new ArrayDeclPart(arr1d, b1[0], b1[1]); :}
+            {: RESULT = new ArrayDeclPart(arr1d, b1[0], b1[1]); RESULT.setPosition(arr1dleft, arr1dright); :}
     |   IDENT:arr2d L_SQUARE bound:b1 COMMA bound:b2 R_SQUARE    // 2-dimensional array variable
-            {: RESULT = new ArrayDeclPart(arr2d, b1[0], b1[1], b2[0], b2[1]); :}
+            {: RESULT = new ArrayDeclPart(arr2d, b1[0], b1[1], b2[0], b2[1]); RESULT.setPosition(arr2dleft, arr2dright); :}
     ;
 
 bound
@@ -245,9 +245,9 @@ generalBound
 
 type
     ::= INTEGER:i                     // integer type
-            {: RESULT = new IntegerType(); :}
+            {: RESULT = new IntegerType(); RESULT.setPosition(ileft, iright); :}
     |   BOOLEAN:b                     // boolean type
-            {: RESULT = new BooleanType(); :}
+            {: RESULT = new BooleanType(); RESULT.setPosition(bleft, bright); :}
     ;
 
 outputs
@@ -261,9 +261,9 @@ output
     ::= expression:e                  // integer expression
             {: RESULT = e; :}
     |   TEXTCONST:t                   // text constant
-            {: RESULT = new TextConstExpn(t); :}
+            {: RESULT = new TextConstExpn(t); ((Expn)RESULT).setPosition(tleft, tright); :}
     |   NEWLINE:n                     // newline constant
-            {: RESULT = new SkipConstExpn(); :}
+            {: RESULT = new SkipConstExpn(); ((Expn)RESULT).setPosition(nleft, nright); :}
     ;
 
 inputs
@@ -305,70 +305,70 @@ parameters
 
 parameter
     ::= IDENT:i COLON type:t            // declare one parameter
-            {: RESULT = new ScalarDecl(i, t); :}
+            {: RESULT = new ScalarDecl(i, t); RESULT.setPosition(ileft, iright); :}
     ;
 
 expression
     ::= conjunction:c {: RESULT = c; :}                 // disjunctions, associate left-to-right
-    |   expression:e OR conjunction:c {: RESULT = new BoolExpn(BoolExpn.OP_OR, e, c); :}
+    |   expression:e OR:p conjunction:c {: RESULT = new BoolExpn(BoolExpn.OP_OR, e, c); RESULT.setPosition(pleft, pright); :}
     ;
 
 conjunction
     ::= negation:e {: RESULT = e; :}                    // conjunctions, associate left-to-right
-    |   conjunction:e AND negation:n {: RESULT = new BoolExpn(BoolExpn.OP_AND, e, n); :}
+    |   conjunction:e AND:p negation:n {: RESULT = new BoolExpn(BoolExpn.OP_AND, e, n); RESULT.setPosition(pleft, pright); :}
     ;
 
 negation
     ::= compareExpn:e {: RESULT = e; :}                 // negations
-    |   NOT negation:e {: RESULT = new NotExpn(e); :}
+    |   NOT:p negation:e {: RESULT = new NotExpn(e); RESULT.setPosition(pleft, pright); :}
     ;
 
 compareExpn
     ::= arithExpn:e {: RESULT = e; :}                                   // comparisons, do not associate
-    |   arithExpn:e1 EQUAL arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_EQUAL, e1, e2); :}
-    |   arithExpn:e1 NOT EQUAL arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_NOT_EQUAL, e1, e2); :}
-    |   arithExpn:e1 LESS arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS, e1, e2); :}
-    |   arithExpn:e1 LESS EQUAL arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS_EQUAL, e1, e2); :}
-    |   arithExpn:e1 GREATER arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER, e1, e2); :}
-    |   arithExpn:e1 GREATER EQUAL arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER_EQUAL, e1, e2); :}
+    |   arithExpn:e1 EQUAL:p arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_EQUAL, e1, e2); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e1 NOT EQUAL:p arithExpn:e2 {: RESULT = new EqualsExpn(EqualsExpn.OP_NOT_EQUAL, e1, e2); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e1 LESS:p arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS, e1, e2); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e1 LESS EQUAL:p arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_LESS_EQUAL, e1, e2); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e1 GREATER:p arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER, e1, e2); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e1 GREATER EQUAL:p arithExpn:e2 {: RESULT = new CompareExpn(CompareExpn.OP_GREATER_EQUAL, e1, e2); RESULT.setPosition(pleft, pright); :}
     ;
 
 arithExpn
     ::= term:t {: RESULT = t; :}                        // expressions, associate + , - left-to-right
-    |   arithExpn:e PLUS term:t {: RESULT = new ArithExpn(ArithExpn.OP_PLUS, e, t); :}
-    |   arithExpn:e MINUS term:t {: RESULT = new ArithExpn(ArithExpn.OP_MINUS, e, t); :}
+    |   arithExpn:e PLUS:p term:t {: RESULT = new ArithExpn(ArithExpn.OP_PLUS, e, t); RESULT.setPosition(pleft, pright); :}
+    |   arithExpn:e MINUS:p term:t {: RESULT = new ArithExpn(ArithExpn.OP_MINUS, e, t); RESULT.setPosition(pleft, pright); :}
     ;
 
 term
     ::= factor:f {: RESULT = f; :}                      // terms, associate * , / left-to-right
-    |   term:t TIMES factor:f {: RESULT = new ArithExpn(ArithExpn.OP_TIMES, t, f); :}
-    |   term:t DIVIDE factor:f {: RESULT = new ArithExpn(ArithExpn.OP_DIVIDE, t, f); :}
+    |   term:t TIMES:p factor:f {: RESULT = new ArithExpn(ArithExpn.OP_TIMES, t, f);  RESULT.setPosition(pleft, pright); :}
+    |   term:t DIVIDE:p factor:f {: RESULT = new ArithExpn(ArithExpn.OP_DIVIDE, t, f); RESULT.setPosition(pleft, pright); :}
     ;
 
 factor
     ::= primary:p {: RESULT = p; :}                     // unary minus
-    |   MINUS factor:f {: RESULT = new UnaryMinusExpn(f); :}
+    |   MINUS:p factor:f {: RESULT = new UnaryMinusExpn(f); RESULT.setPosition(pleft, pright); :}
     ;
 
 primary
     ::= constant:c {: RESULT = c; :}                                        // integer or boolean constant
     |   variable:v {: RESULT = v; :}                                        // scalar, array variable or function call
     |   IDENT:i L_PAREN arguments:a R_PAREN                                 // function call
-            {: RESULT = new FunctionCallExpn(i, a); :}
+            {: RESULT = new FunctionCallExpn(i, a); RESULT.setPosition(ileft, iright); :}
     |   L_PAREN expression:e R_PAREN {: RESULT = e; :}                      // parenthesized expression
     |   L_PAREN expression:q QUESTION expression:t COLON expression:f R_PAREN     // conditional expression
             {: RESULT = new ConditionalExpn(q, t, f); :}
     ;
 
 constant
-    ::= INTCONST:i {: RESULT = new IntConstExpn(i); :}                      // integer constant
-    |   TRUE {: RESULT = new BoolConstExpn(true); :}                        // constant true
-    |   FALSE {: RESULT = new BoolConstExpn(false); :}                      // constant false
+    ::= INTCONST:i {: RESULT = new IntConstExpn(i); RESULT.setPosition(ileft, iright); :}                      // integer constant
+    |   TRUE:i {: RESULT = new BoolConstExpn(true); RESULT.setPosition(ileft, iright); :}                        // constant true
+    |   FALSE:i {: RESULT = new BoolConstExpn(false); RESULT.setPosition(ileft, iright); :}                      // constant false
     ;
 
 variable
-    ::= IDENT:i {: RESULT = new IdentExpn(i); :}                            // scalar variable or function call
-    |   IDENT:arr L_SQUARE expression:i1 R_SQUARE {: RESULT = new SubsExpn(arr, i1); :} // element of 1-dimensional array
+    ::= IDENT:i {: RESULT = new IdentExpn(i); RESULT.setPosition(ileft, iright); :}                            // scalar variable or function call
+    |   IDENT:arr L_SQUARE expression:i1 R_SQUARE {: RESULT = new SubsExpn(arr, i1); RESULT.setPosition(arrleft, arrright); :} // element of 1-dimensional array
     |   IDENT:arr L_SQUARE expression:i1 COMMA expression:i2 R_SQUARE                 // element of 2-dimensional array;
-            {: RESULT = new SubsExpn(arr, i1, i2); :}
+            {: RESULT = new SubsExpn(arr, i1, i2); RESULT.setPosition(arrleft, arrright); :}
     ;

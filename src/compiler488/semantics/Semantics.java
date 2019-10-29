@@ -13,7 +13,7 @@ import compiler488.ast.expn.SubsExpn;
 import compiler488.ast.stmt.*;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
-import javafx.util.Pair;
+import compiler488.Pair;
 
 import static compiler488.symbol.Symbol.DataType.None;
 
