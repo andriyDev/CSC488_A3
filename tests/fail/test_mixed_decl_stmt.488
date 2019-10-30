@@ -1,7 +1,8 @@
 {
     var x : boolean
+    var y : integer
+    
     x := true
 
-    var y : integer
     y := 10
 }

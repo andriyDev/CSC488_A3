@@ -1,5 +1,5 @@
 {
-    whie true do
+    while true do
     {
         exit 0
     }

@@ -1,6 +1,0 @@
-{
-    whie true do
-    {
-        exit -1
-    }
-}
