@@ -3,3 +3,5 @@ Andriy Dzikh (dzikhand) -> Main semantic analysis recursive structure, statement
 Thomas Connolly () -> Expression semantic actions.
 
 Kaori Tomihara (tomihar1) -> AST generation (.cup file), all passing test cases, some failing test cases.
+
+Jayson Camargo (camargoa) -> Some failing test cases.

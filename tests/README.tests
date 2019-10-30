@@ -40,10 +40,12 @@ failing:
     test_exit_when_integer.488                  : Using exit where the when expression results in an integer
     test_expr_compare_ops.488                   : Comparing incompatible types
     test_function_duplicate_declaration.488     : Declaring a function and a variable with the same identifier
+    test_function_call_wrong_arg_types.488      : Calling a function with the wrong argument types
     test_function_no_args.488                   : Calling a function declared with parameters with no arguments
     test_function_no_return.488                 : Declaring a function with no return statement
     test_function_non_exhaustive_return.488     : Declaring a function with a nonexhaustive set of return statements. i.e. the function can end without returning
     test_function_not_enough_args.488           : Calling a function with not enough arguments
+    test_function_proc_duplicate_decl.488       : Declaring a function and a procedure with the same identifier
     test_function_too_many_args.488             : Calling a function with too many arguments
     test_if_integer.488                         : Using an if statement where the condition is an integer
     test_if_stmt_both_checked.488               : Ensuring that both sides of an if statement are considered for semantic analysis
@@ -57,6 +59,7 @@ failing:
     test_read_undefined.488                     : Reading into an undefined variable
     test_repeat_integer.488                     : Repeat loop where the condition is an integer expression
     test_return_bool_from_int_function.488      : Returning a boolean expression from a function with type integer
+    test_return_in_main_scope.488               : Return in the main program scope
     test_return_int_from_bool_function.488      : Returning an integer expression from a function with type boolean
     test_return_nothing_from_function.488       : Using the return statement with no result from a function
     test_return_value_from_procedure.488        : Using the return statement with a result expression from a procedure

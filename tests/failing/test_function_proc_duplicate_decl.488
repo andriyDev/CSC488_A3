@@ -1,0 +1,11 @@
+{
+    function f : integer {
+        return with 0
+    }
+
+    procedure f(a : integer, b : integer) {
+
+    }
+    
+    write 0
+}
