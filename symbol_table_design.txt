@@ -7,3 +7,11 @@ SymbolScope - Holds the symbols for all the declarations in the current scope, a
 ArrayBounds - A simple representation of the bounds of an array (whether 1d or 2d).
 
 Using SymbolScope, we can have a "reversed" tree of scopes, so deeper scopes can still access scopes above them.
+
+For the specific questions in A3.marking.txt: 
+
+We treat major/minor scopes as the same from the perspective of the symbol table (the different behaviours are handled as a part of the semantic analyzer).
+
+Parameters are handled exactly the same as regular variables. They are simply defined before any other declarations.
+
+Array declarations are handled using the ArrayBounds class as an argument to Symbol. This makes it easy to create an array symbol.
