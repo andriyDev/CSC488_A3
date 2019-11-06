@@ -1,0 +1,96 @@
+1. Storage
+
+    a. variables in the main program
+
+    Variables in the main program will be allocated as an activation record at the beginning of the stack. This way, nested scopes can easily access these "global" variables by simply using the display at 0. These variables will the simply be put in order as they are declared. This way accessing variables need only be counting the total amount of space of variables beforehand. In addition, these variables must be assigned their default values.
+
+    Example code:
+
+    {
+        var x, y[3] : integer   % a-1
+
+        function f : integer {
+            return y[2] % a-2
+        }
+    }
+
+    Generated code (specifically for the variable portion):
+
+    PUSH 0  % a-1
+    PUSH 0  % a-1
+    PUSH 0  % a-1
+    PUSH 0  % a-1
+
+    These can easily be accessed by any scope using commands similar to (the last argument will vary):
+
+    ADDR 0 3    % a-2
+
+    b. variables in procedures and functions
+
+    Variables in routines will be handled similarly to the main program. That is, when an activation record starts, variable values will simply be pushed onto the stack (see 1.a for details). Accessing these variables can be performed similar to those in the main program, however the "lexical level" argument must be specified at compile time based on the depth of the function declaration. When leaving the routine, these variables will be popped off.
+
+    Example code:
+    
+    {
+        var x, y[3] : integer
+
+        function f : integer {
+            var z : integer
+            return z % b-1
+        }
+    }
+
+    Generated code for accessing:
+
+    ADDR 1 0    % b-1
+    
+    c. variables in minor scopes
+
+    Minor scopes will be handled just the same as the routine scopes, with the added understanding that an explicit activation record will not be created. The variables of the minor scope will just be pushed onto the stack atop the variables of the major scope. This means that minor scopes when accessed will need to account for the total variables of all previous scopes. This can be done during the generation phase as incrementing both a function size and a scope size whenever a declaration is reached, and then decrementing the function size by the scope size when leaving a scope. This allows us to place variables in overlapping locations when their execution times do not overlap.
+
+    Example code:
+
+    {
+        var x, y[3] : integer
+
+        {
+            var z : integer
+            z := z  % c-1
+        }
+
+        {
+            var w : integer
+            w := w  % c-2
+        }
+    }
+
+    Generated code for access:
+
+    ADDR 0 4    % c-1
+
+    ADDR 0 4    % c-2
+
+    These must be offset to account for the total size of the scope the main lexical scope, but they do not need to be offset relative to each other since these variables are mutually exclusive when it comes to accessibility.
+
+    d. integer and boolean constants
+
+    These values will not be "stored" anywhere but the program code. These constants will be embedded in the program code and will simply be pushed when needed for an expression.
+
+    e. text constants
+
+    Just as with the other constants, text constants will only be embedded in the program code. As text constants can only be used in the context of "write" expressions, these can be interleaved with the "write" command to reduce memory requirements.
+
+    Example code:
+
+    {
+        write "ABC" % e-1
+    }
+
+    Generated code for constant (The characters will be named as the text representation rather than their character value):
+
+    PUSH "A"    % e-1
+    PRINTC      % e-1
+    PUSH "B"    % e-1
+    PRINTC      % e-1
+    PUSH "C"    % e-1
+    PRINTC      % e-1
