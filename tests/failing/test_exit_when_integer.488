@@ -1,6 +1,0 @@
-{
-    var x : integer
-    while true do {
-        exit when x
-    }
-}

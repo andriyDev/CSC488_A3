@@ -1,9 +1,0 @@
-{
-    var x : boolean
-    var y : integer
-
-    if true then x := false
-
-    if x then write "wrong branch", 123, newline
-         else write "correct", newline 
-}

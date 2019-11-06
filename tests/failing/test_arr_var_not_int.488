@@ -1,5 +1,0 @@
-{
-    var arr1[2] : integer
-
-    arr1[1] := true
-}

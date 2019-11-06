@@ -1,6 +1,0 @@
-{
-    procedure p {
-        return with 0
-    }
-    write 0
-}

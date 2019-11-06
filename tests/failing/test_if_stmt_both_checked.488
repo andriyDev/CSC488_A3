@@ -1,8 +1,0 @@
-{
-    var x : boolean
-    x := false
-
-    if x then abc 
-         else write "correct", newline
-
-}

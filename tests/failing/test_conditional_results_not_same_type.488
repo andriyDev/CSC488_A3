@@ -1,4 +1,0 @@
-{
-    var x : integer
-    x := (true ? true : 1)
-}

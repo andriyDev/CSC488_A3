@@ -1,4 +1,0 @@
-Our AST generation nearly always simply takes the subtrees and wraps them with the constructor of an AST node. Ex: a + b => new ArithExpn(OP_PLUS, a, b)
-Almost all parser actions also include a "setPosition" call. This just assigns the position of the symbols to their associated AST. This allows us to print more informative error messages, specifying the line and column numbers. In addition, the AST class has been given a "getPosition" method which does exactly what is expected. Note that we only need to set the position for newly created AST nodes, since nodes taken from children will already have their position assigned.
-
-One special action to note for AST generation is for the <input> symbol. The resulting type must be ASTList<Readable>, so we must cast Expn to something that is Readable. Since we know <variable> will either return a SubsExpn or IdentExpn, we check for those two cases and cast to the correct one, since either is Readable. This solves the issue.

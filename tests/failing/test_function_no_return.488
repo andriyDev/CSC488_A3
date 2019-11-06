@@ -1,6 +1,0 @@
-{
-    function f : integer {
-        
-    }
-    write 0
-}

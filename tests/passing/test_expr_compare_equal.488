@@ -1,9 +1,0 @@
-{
-    var x, y : integer
-    var a, b : boolean
-
-    a := x = 10
-
-    b := (a = true) or (x not= y) and false
-
-}

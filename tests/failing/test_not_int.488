@@ -1,4 +1,0 @@
-{
-    var x : boolean
-    x := not 0
-}

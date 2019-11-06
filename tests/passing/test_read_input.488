@@ -1,8 +1,0 @@
-{
-    var x : integer
-    var arr1[4] : integer
-    var arr2[2, 2..4] : integer
-
-    read x
-    read arr1[2], arr2[1, 3]
-}

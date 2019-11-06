@@ -1,7 +1,0 @@
-{
-    while true do {
-        while true do {
-            exit 3
-        }
-    }
-}
