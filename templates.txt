@@ -7,23 +7,23 @@
     Example code:
 
     {
-        var x, y[3] : integer   % a-1
+        var x, y[3] : integer   % 1.a.1
 
         function f : integer {
-            return y[2] % a-2
+            return y[2] % a.2
         }
     }
 
     Generated code (specifically for the variable portion):
 
-    PUSH 0  % a-1
-    PUSH 0  % a-1
-    PUSH 0  % a-1
-    PUSH 0  % a-1
+    PUSH 0  % 1.a.1
+    PUSH 0  % 1.a.1
+    PUSH 0  % 1.a.1
+    PUSH 0  % 1.a.1
 
     These can easily be accessed by any scope using commands similar to (the last argument will vary):
 
-    ADDR 0 3    % a-2
+    ADDR 0 3    % 1.a.2
 
     b. variables in procedures and functions
 
@@ -36,13 +36,13 @@
 
         function f : integer {
             var z : integer
-            return z % b-1
+            return z % 1.b.1
         }
     }
 
     Generated code for accessing:
 
-    ADDR 1 0    % b-1
+    ADDR 1 0    % 1.b.1
     
     c. variables in minor scopes
 
@@ -55,20 +55,20 @@
 
         {
             var z : integer
-            z := z  % c-1
+            z := z  % 1.c.1
         }
 
         {
             var w : integer
-            w := w  % c-2
+            w := w  % 1.c.2
         }
     }
 
     Generated code for access:
 
-    ADDR 0 4    % c-1
+    ADDR 0 4    % 1.c.1
 
-    ADDR 0 4    % c-2
+    ADDR 0 4    % 1.c.2
 
     These must be offset to account for the total size of the scope the main lexical scope, but they do not need to be offset relative to each other since these variables are mutually exclusive when it comes to accessibility.
 
@@ -83,14 +83,230 @@
     Example code:
 
     {
-        write "ABC" % e-1
+        write "ABC" % 1.e.1
     }
 
     Generated code for constant (The characters will be named as the text representation rather than their character value):
 
-    PUSH "A"    % e-1
-    PRINTC      % e-1
-    PUSH "B"    % e-1
-    PRINTC      % e-1
-    PUSH "C"    % e-1
-    PRINTC      % e-1
+    PUSH "A"    % 1.e.1
+    PRINTC      % 1.e.1
+    PUSH "B"    % 1.e.1
+    PRINTC      % 1.e.1
+    PUSH "C"    % 1.e.1
+    PRINTC      % 1.e.1
+
+2. Expressions
+
+    a. values of constants
+
+    As specified in 1.d and 1.e, integer and boolean values will not truly be "accessed". When an expression requires these constants, it will simply push them directly onto the stack using the PUSH command since it takes an argument anyway.
+
+    b. values of scalar variables
+
+    As specified in 1.a, 1.b, and 1.c, to access the value of scalar variables we first must load the address of the variable with ADDR (for which the arguments are computed at compile time), and then we use the LOAD command to collect its value.
+
+    Example code:
+
+    {
+        var x, y[3] : integer
+        x := x  % 2.b.1
+    }
+
+    Generated code:
+
+    ADDR 0 0    % 2.b.1
+    LOAD        % 2.b.1
+
+    At the end of this, the value to be stored in x will be at the top of stack, which we can then use for whatever next steps we need (in this example, simply assigning back to x).
+
+    c. array elements
+
+    The beginning of accessing array elements is the same: we first load the address of the variable with ADDR. Now we must split into two cases: 1d vs 2d arrays.
+
+        i. 1-d arrays
+
+        Consider array A[x] where x is the expression. In this case, we must first evaluate x. Then we subtract the lower bound for dimension 1 of x, and finally we add this offset to the address acquired from ADDR, where we can use LOAD to collect the value.
+
+        Example code:
+
+        {
+            var y[3..10] : integer
+            write y[4]  % 2.c.i.1
+        }
+
+        Generated code (including initial address access):
+
+        ADDR 0 0    % 2.c.i.1
+        PUSH 4      % 2.c.i.1 - this is simply evaluating the expression "4"
+        PUSH 3      % 2.c.i.1 - value of lower bound for dimension 1
+        SUB         % 2.c.i.1 - subtracts lower bound from expression value
+        LOAD        % 2.c.i.1
+
+        ii. 2-d arrays
+
+        Consider array A[x, y] where x, y are expressions. In this case, we first evaluate x. We then subtract the lower bound for dimension 1, and also multiply by the stride of dimension 2. The reasoning for these manipulations is explained in the class slides, so I will not explain again. Continuing, we then evaluate expression y, and subtract the lower bound for dimension 2. Finally, we add these together (since they will be the top most values on the stack) as well as the array address and use LOAD to collect the value.
+
+        Example code:
+
+        {
+            var y[3..10, 7..12] : integer
+            write y[4, 11]   % 2.c.i.2
+        }
+
+        Generated code (including initial address access):
+
+        ADDR 0 0    % 2.c.i.2
+        PUSH 4      % 2.c.i.2 - evaluating expression "4"
+        PUSH 3      % 2.c.i.2 - value of lower bound for dimension 1
+        SUB         % 2.c.i.2
+        PUSH 6      % 2.c.i.2 - stride of dimension 2
+        MUL         % 2.c.i.2
+        PUSH 11     % 2.c.i.2 - evaluating expression "11"
+        PUSH 7      % 2.c.i.2 - value of lower bound for dimension 2
+        SUB         % 2.c.i.2
+        ADD         % 2.c.i.2 - add values for both dimensions
+        ADD         % 2.c.i.2 - add offset to array start address
+        LOAD        % 2.c.i.2
+    
+    As a slight optimization, for arrays with a lower bound of 0, these templates will be modified to exclude the operations of PUSHing the lower bound for the dimension and substracting, since these will simply yield the same value as the original expression.
+
+    d. arithmetic operators
+
+    These operations will be quite simple. Simply evaluate the expression of the left, then evaluate the expression on the right. Finally, call the appropriate operation.
+
+    Example code:
+
+    {
+        var x, y : integer
+        x := 4 + 9  % 2.d.1
+    }
+
+    Generated code:
+    
+    PUSH 4  % 2.d.1 - evaluate left
+    PUSH 9  % 2.d.1 - evaluate right
+    ADD     % 2.d.1
+
+    The last line will be the only difference for different arithmetic operators.
+
+    e. comparison operators
+
+    These operators each have somewhat unique behaviour. We will rely on the explanations from 2.f.
+
+        i. The "less than" operator and the "equal" operator
+
+        These will perform like arithmetic operators: evaluate left, evaluate right, call operation.
+
+        Example code:
+
+        {
+            if 4 < 5 then { % 2.e.i.1
+
+            }
+        }
+
+        Generated code:
+
+        PUSH 4  % 2.e.i.1
+        PUSH 5  % 2.e.i.1
+        LT      % 2.e.i.1
+
+        ii. The "greater than" operator
+
+        This operator will be similar to the previous: evaluate left, evaluate right, swap the values, call LT operation. We can do this, since if b < a, that means a > b. So simply swapping the top two values (the values of the expression) will produce the desired result.
+
+        Example code:
+
+        {
+            if 4 > 5 then { % 2.e.ii.1
+
+            }
+        }
+
+        Generated code:
+
+        PUSH 4  % 2.e.ii.1
+        PUSH 5  % 2.e.ii.1
+        SWAP    % 2.e.ii.1
+        LT      % 2.e.ii.1
+
+        As a note, the reason we do not simply evaluate the right then the left is because if a function on the right yields some side effect to variables accessible to the left, the computation will be incorrect.
+
+        iii. The "greater than or equal" operator, the "not equal" operator and the "less than or equal" operator
+
+        These can simply by the boolean "not" of "less than", "equal", and "greater than" operators respectively. As described in 2.f, performing a boolean "not" is simply taking 1 - <your value> so, using the same trick, we first push a 1 onto the stack, then proceed as normal with the associated operation, and subtract at the end to perform the boolean "not".
+
+        Example code:
+        
+        {
+            if 4 >= 5 then { % 2.e.iii.1
+
+            }
+        }
+
+        Generated code:
+
+        PUSH 1  % 2.e.iii.1 - push 1 for the boolean "not" later
+        PUSH 4  % 2.e.iii.1
+        PUSH 5  % 2.e.iii.1
+        LT      % 2.e.iii.1
+        SUB     % 2.e.iii.1 - subtract for the boolean "not"
+
+        The same can be done for "greater than" and "equal" operations to get the associated result.
+    
+    f. boolean operators
+
+    The "or" operator can be performed just like the arithmetic operators: evaluate left, evaluate right, call OR command. The "and" operator is slightly more tricky (and "not" is trickier still). First we must note that boolean values are stored as 1 for true, and 0 for false. Using this fact, we can perform an "and" using addition. If both sides are true, that means that they are both 1, so adding them together will yield 2 (in any other case the sum is less than 2). We can then simply check if the sum we get equals 2, and if it does, the expression evaluates to true. Otherwise, the sum must have been less than 2, and therefore the "and" fails (as expected).
+
+    Example code:
+
+    {
+        if true and false then {    % 2.f.1
+
+        }
+    }
+
+    Generated code:
+
+    PUSH 1  % 2.f.1 - evaluate left
+    PUSH 0  % 2.f.1 - evaluate right
+    ADD     % 2.f.1
+    PUSH 2  % 2.f.1 - the 2 we will compare against
+    EQ      % 2.f.1
+
+    The "not" operation will also take advantage of the representation of the boolean values. Since true is 1, and false is 0, we can do 1 - <value> to get the boolean "not", since 1 - true = 1 - 1 = 0 = false and 1 - false = 1 - 0 = 1 = true (the expected results for "not"). To do this in our code generation, we first push a 1 (so we have something to subtract from). Then we evaluate the expression to be "not"ed and finally we subtract the two.
+
+    Example code:
+
+    {
+        if not false then {  % 2.f.2
+
+        }
+    }
+
+    Generated code:
+
+    PUSH 1  % 2.f.2 - the 1 to subtract from later
+    PUSH 0  % 2.f.2 - evaluate expression
+    SUB     % 2.f.2
+
+    g. conditional expressions
+
+    Conditional expressions will use a branch command. The idea is to first evaluate the condition, and if false, jump to the part of the code that evaluates the "false" expression of the conditional. If the condition is true, it should evaluate the "true" expression. To do this, we use two branches. The first will decide whether to evaluate the "true" or "false" expressions. The second will "skip" over the false section so we do not evaluate both expressions. The difficult part is that, since we do not know how big the "true" expression will be in terms of instructions, we will have to go back (during code generation) after constructing the "true" expression to assign the correct address.
+
+    Example code:
+
+    {
+        write (true ? 7 : 9)    % 2.g.1
+    }
+
+    Generated code:
+
+    PUSH <address of false expression>      % 2.g.1 - for BF later
+    PUSH 1                                  % 2.g.1 - evaluate condition
+    BF                                      % 2.g.1
+    PUSH 7                                  % 2.g.1 - evaluate true expression
+    PUSH <address after false expression>   % 2.g.1 - skip over false expression
+    BR                                      % 2.g.1
+    PUSH 9                                  % 2.g.1 - evaluate false expression, this is the address of the false expression
+    % This would be the address after false expression
