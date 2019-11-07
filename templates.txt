@@ -16,8 +16,8 @@
 
     Generated code (specifically for the variable portion):
 
-    PUSH 4  % 1.a.1
     PUSH 0  % 1.a.1
+    PUSH 4  % 1.a.1
     DUPN    % 1.a.1
 
     These can easily be accessed by any scope using commands similar to (the last argument will vary):
@@ -314,96 +314,132 @@
 
     a. the activation record
 
-    The activation record requires three main values: the dynamic link, the return address and the static link. The return address for a routine call will be generated at runtime based on the call site. The static link can also easily be found by using the lexical level of the called function (minus 1 just as the slides explain) and the ADDR instruction (with an offset of 0). The dynamic link will simply be the lexical level of the calling function and will be used as part of the display management strategy.
+    Our activation record will be a combination of the block mark and the local variables (in that order). In addition, we add the slight simplification that the display entries will point to the start of the local variables. This allows us to easily distinguish between accessing variables, and accessing the block mark. Our block mark will contain the return address and the static link. As will be discussed in 3.g, the dynamic link can be recreated from the call site, and as the display management strategy will have to be generated at compile time, we can save on memory this way. Example code generation will be given in 3.b.
 
     b. procedure and function entrance code
 
-    Note: We will be referring to "functions" occasionally, but the difference is negligible between functions and procedures (at least for entrance code).
-
-    Prior to entering a routine, we first get the address of the current activation record using ADDR. Next, we push the return address to the stack, which will simply be a static address to the next instruction after the call. Then we can push the address of the function and finally branch.
+    Both procedures and functions will essentially have the same entrance code. We have two locations to consider: the call site, and the start of the routine. First, the call site. In order to call the function we need to provide the return address and the parameters, and finally jump. We will also make space for the static link. So, we simply PUSH the return address, PUSH 0 to make a space for the static link, and then evaluate all parameter expressions in order. Finally, we PUSH the address of the routine and use BR to jump into the code.
 
     Example code:
 
     {
-        function f : integer {
-            return with 0
+        procedure p(a : integer) {
+
         }
-        write f % 3.b.1
+        p(7)   % 3.b.1
     }
 
     Generated code:
 
-    ADDR 1 0                    % 3.b.1
-    PUSH <address after call>   % 3.b.1
-    PUSH <address of f>         % 3.b.1
-    BR                          % 3.b.1
-    % This will be the <address after call>
+    PUSH <address after branch>     % 3.b.1
+    PUSH 0                          % 3.b.1
+    PUSH 7                          % 3.b.1 - evaluate parameter expression
+    PUSH <address of procedure p>   % 3.b.1
+    BR                              % 3.b.1
+
+    Inside the routine, we must store the correct static link, update the display table and then PUSH all variables. To get the correct static link, we simply get the address of the display for the lexical level above the routine (lecture slides explain this in more detail). We then replace the 0 we PUSHed at the call site with this static link we collected. In order to replace this we will need to calculate the correct offset at compile time to subtract by which will be the number of parameters plus 1. To update the display, we simply use PUSHMT to get the current stack pointer, subtract the size of the parameters, and use SETD to set the pointer of the routine's lexical level to this stack pointer. Finally, we need to allocate space for the routine's local variables. We can do this by first PUSHing a 0, which will be the default value for all variables. We then PUSH the number of addresses we need to fill, and then use DUPN. This will fill all our desired values in at once with few commands. As a note, when using DUPN, we must not include the parameter sizes in our count as those will be handled by the callsite. In addition, if the size of local variables is less than or equal to 3 (the number of instructions it takes to perform the DUPN), we can simply replace this with 3 PUSH 0 commands. This may be an optional optimization in the future.
     
-    Note we are ignoring exit code for the function call right now.
-
-    Inside the function, we first collect the static link using ADDR. Next, we must store this function in the display table by getting the stack pointer and adding it to the table. Finally, we must initialize the local variables. This will simply be a series of PUSH 0 commands to initialize all variables to 0 (which is the default value for integers as well as booleans).
-
     Example code:
 
     {
-        function f : integer {  % 3.b.2
-            var x, y[2] : integer
-            var z : boolean
-            return with 0
+        procedure p(a : integer) {  % 3.b.2
+            var x[5] : integer
         }
+        p(7)
     }
 
     Generated code:
 
-    ADDR 0 0    % 3.b.2
     PUSHMT      % 3.b.2
+    PUSH 2      % 3.b.2 - size of parameters plus one
+    SUB         % 3.b.2
+    ADDR 0 0    % 3.b.2 - get static link (one lexical level up)
+    STORE       % 3.b.2 - store the static link in its correct location
+    PUSHMT      % 3.b.2
+    PUSH 1      % 3.b.2 - size of parameters
+    SUB         % 3.b.2
     SETD 1      % 3.b.2
     PUSH 0      % 3.b.2
-    PUSH 0      % 3.b.2
-    PUSH 0      % 3.b.2
-    PUSH 0      % 3.b.2
-    PUSH 0      % 3.b.2
+    PUSH 6      % 3.b.2 - size of remaining local variables
+    DUPN        % 3.b.2 - duplicate 0 to fill the local variables.
 
     c. procedure and function exit code
 
-    For exit code, the difference between procedure and function is more apparent. When a procedure returns (either through a return statement or by reaching the end of its code), we first use the POP command to remove all local variables, as well as the address of the static link. Finally, we use BR to return through the return address pushed before the call.
+    For exit code, procedures and functions differ. Again, we have two locations: the call site and the routine interior. The call site code will be similar for both routine types. The difference will simply be minding the added return value of functions. Once we return to the call site, we simply need to reset our display table. This will be described in more detail in 3.g, but effectively this will be a series of compile time operations which load the static links, uses SETD to assign the display for that lexical level, and then continues recursively. For the initial static link, we will simply use the current local variable sizes (plus 1, and if it is a function, plus another 1) and subtract that from our stack pointer and that will give us the initial static link (which means we do not need to store the dynamic link). Once the display is reset, we can continue on in this line of execution.
+
+    Now the routine interior. We will consider procedures first (as they are simpler). First, when generating code for procedures, we will have the main code section, and the cleanup section. The main code will be generated from the statements of the procedure. The cleanup section will follow this, and will handle procedure exiting. So whenever a return statement is hit, we will simply push the address of the cleanup section and BR. Notice that if no return statement is hit, we will naturally move to the cleanup section (since it is after the main code).
 
     Example code:
 
     {
         procedure p {
-            var x, y : integer
-            write 0
-        }   % 3.c.1
+            if true {
+                return  % 3.c.1
+            }
+        }
+        p
     }
 
     Generated code:
 
-    POP     % 3.c.1
-    POP     % 3.c.1
-    POP     % 3.c.1
-    BR      % 3.c.1
+    PUSH <address of cleanup>   % 3.c.1
+    BR                          % 3.c.1
 
-    After we return from the procedure, we use our display management strategy to reassemble our display table (we will discuss this in more detail in 3.g). This is where the dynamic link will be used.
-
-    Functions are slightly different. Based on our implementation of semantic analysis, we know that the function will end at a return statement. So when a return statement is hit, we first get the address of the static link using ADDR with a displacement of -1. Next, we evaluate the expression provided. Next we store the value of the expression at the address of the static link, followed by popping all the way until we reach the address of the static link. Next, we swap the return value and the return address (which precedes the static link). Finally, we branch to return to the call site (at which point the display management strategy will take over just as before although it must mind the added return value).
+    The cleanup section will simply be popping the correct number of variables off the stack, and using BR to return to the call site. To simplify code generation, we can use the display table to easily pop off the correct number of variables on the stack. For optimization, we can compute the correct number of variables to pop off and simply insert this as a constant. However for this template, we will use the first method.
 
     Example code:
 
     {
+        procedure p {
+            var x, y[10] : integer
+            write 0
+        }   % 3.c.2
+        p
+    }
+
+    Generated code:
+
+    PUSHMT      % 3.c.2
+    ADDR 1 -1   % 3.c.2 - push the address of the static link, since we want to pop everything until before that.
+    SUB         % 3.c.2 - this will get the number of variables on the stack from the static link to the top of the stack.
+    POPN        % 3.c.2 - pop all those variables
+    BR          % 3.c.2 - the return address will be next, so just branch to get back there.
+
+    Functions have a similar idea, but we must "juggle" the return variable. Again, the code will be split into the main code and the cleanup section. On a return statement, instead of simply branching to the cleanup section, we must first evaluate the return expression, and then PUSH the cleanup address and branch. Note that in our implementation, we require that functions terminate with a return statement (they cannot reach the end of code without returning). So the cleanup section is completely separated from the main code by a return statement.
+
+    Example code:
+    
+    {
         function f : integer {
-            var x, y : integer
-            return with 7   % 3.c.2
+            return with 7   % 3.c.3
         }
     }
 
     Generated code:
 
-    ADDR 1 -1   % 3.c.2
-    PUSH 7      % 3.c.2 - evaluate return expression
-    STORE       % 3.c.2
-    POP         % 3.c.2
-    POP         % 3.c.2
-    SWAP        % 3.c.2
-    BR          % 3.c.2
+    PUSH 7                      % 3.c.3 - evaluate return expression
+    PUSH <address of cleanup>   % 3.c.3
+    BR                          % 3.c.3
+
+    For the cleanup section, we first replace the static link with the value of the expression so that we can clear the stack. Next we use the same strategy as for procedures to clear the stack (with the added restriction that we do not pop the static link location). In order to branch, we must first SWAP the return value with the return address, after which we can use the BR command.
+
+    Example code:
+    
+    {
+        function f : integer {
+            return with 7
+        }   % 3.c.4
+    }
+
+    Generated code:
+
+    ADDR 1 -1   % 3.c.4 - get address of the static link
+    SWAP        % 3.c.4 - swap the address with the return value
+    STORE       % 3.c.4
+    PUSHMT      % 3.c.4
+    ADDR 1 0    % 3.c.4
+    SUB         % 3.c.4
+    POPN        % 3.c.4
+    SWAP        % 3.c.4 - swap the return value and the return address
+    BR          % 3.c.4 - return to the call site.
     
