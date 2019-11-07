@@ -2,7 +2,7 @@
 
     a. variables in the main program
 
-    Variables in the main program will be allocated as an activation record at the beginning of the stack. This way, nested scopes can easily access these "global" variables by simply using the display at 0. These variables will the simply be put in order as they are declared. This way accessing variables need only be counting the total amount of space of variables beforehand. In addition, these variables must be assigned their default values.
+    Variables in the main program will be allocated as an activation record at the beginning of the stack. This way, nested scopes can easily access these "global" variables by simply using the display at 0. These variables will the simply be put in order as they are declared. This way accessing variables need only be counting the total amount of space of variables beforehand. In addition, these variables must be assigned their default values. We will use DUPN to initialize these so we have fewer instructions than a series of PUSH 0 commands.
 
     Example code:
 
@@ -16,10 +16,9 @@
 
     Generated code (specifically for the variable portion):
 
+    PUSH 4  % 1.a.1
     PUSH 0  % 1.a.1
-    PUSH 0  % 1.a.1
-    PUSH 0  % 1.a.1
-    PUSH 0  % 1.a.1
+    DUPN    % 1.a.1
 
     These can easily be accessed by any scope using commands similar to (the last argument will vary):
 
