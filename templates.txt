@@ -314,35 +314,16 @@
 
     a. the activation record
 
-    Our activation record will be a combination of the block mark and the local variables (in that order). In addition, we add the slight simplification that the display entries will point to the start of the local variables. This allows us to easily distinguish between accessing variables, and accessing the block mark. Our block mark will contain the return address and the static link. As will be discussed in 3.g, the dynamic link can be recreated from the call site, and as the display management strategy will have to be generated at compile time, we can save on memory this way. Example code generation will be given in 3.b.
+    Our activation record will be a combination of the block mark and the local variables (in that order). In addition, we add the slight simplification that the display entries will point to the start of the local variables. This allows us to easily distinguish between accessing variables, and accessing the block mark. Our block mark will contain the dynamic link, the return address, and the static link. Example code generation will be given in 3.b.
 
     b. procedure and function entrance code
 
-    Both procedures and functions will essentially have the same entrance code. We have two locations to consider: the call site, and the start of the routine. First, the call site. In order to call the function we need to provide the return address and the parameters, and finally jump. We will also make space for the static link. So, we simply PUSH the return address, PUSH 0 to make a space for the static link, and then evaluate all parameter expressions in order. Finally, we PUSH the address of the routine and use BR to jump into the code.
-
-    Example code:
-
-    {
-        procedure p(a : integer) {
-
-        }
-        p(7)   % 3.b.1
-    }
-
-    Generated code:
-
-    PUSH <address after branch>     % 3.b.1
-    PUSH 0                          % 3.b.1
-    PUSH 7                          % 3.b.1 - evaluate parameter expression
-    PUSH <address of procedure p>   % 3.b.1
-    BR                              % 3.b.1
-
-    Inside the routine, we must store the correct static link, update the display table and then PUSH all variables. To get the correct static link, we simply get the address of the display for the lexical level above the routine (lecture slides explain this in more detail). We then replace the 0 we PUSHed at the call site with this static link we collected. In order to replace this we will need to calculate the correct offset at compile time to subtract by which will be the number of parameters plus 1. To update the display, we simply use PUSHMT to get the current stack pointer, subtract the size of the parameters, and use SETD to set the pointer of the routine's lexical level to this stack pointer. Finally, we need to allocate space for the routine's local variables. We can do this by first PUSHing a 0, which will be the default value for all variables. We then PUSH the number of addresses we need to fill, and then use DUPN. This will fill all our desired values in at once with few commands. As a note, when using DUPN, we must not include the parameter sizes in our count as those will be handled by the callsite. In addition, if the size of local variables is less than or equal to 3 (the number of instructions it takes to perform the DUPN), we can simply replace this with 3 PUSH 0 commands. This may be an optional optimization in the future.
+    Both procedures and functions will essentially have the same entrance code. We will assume that calling a routine is handled. As will be described in 3.e/3.f, routine calls will create the activation record and store parameters before branching, so here we only need to handle the interior of the routine. Inside the routine, we must store the correct static link, update the display table and then PUSH all variables. To get the correct static link, we simply get the address of the display for the lexical level above the routine (lecture slides explain this in more detail). We then replace the 0 we PUSHed at the call site with this static link we collected. In order to replace this we will need to calculate the correct offset from the stack pointer at compile time to subtract by which will be the number of parameters plus 1. To update the display, we simply use PUSHMT to get the current stack pointer, subtract the size of the parameters, and use SETD to set the pointer of the routine's lexical level to this stack pointer. Finally, we need to allocate space for the routine's local variables. We can do this by first PUSHing a 0, which will be the default value for all variables. We then PUSH the number of addresses we need to fill, and then use DUPN. This will fill all our desired values in at once with few commands. As a note, when using DUPN, we must not include the parameter sizes in our count as those will be handled by the callsite. In addition, if the size of local variables is less than or equal to 3 (the number of instructions it takes to perform the DUPN), we can simply replace this with 3 PUSH 0 commands. This may be an optional optimization in the future.
     
     Example code:
 
     {
-        procedure p(a : integer) {  % 3.b.2
+        procedure p(a : integer) {  % 3.b.1
             var x[5] : integer
         }
         p(7)
@@ -350,24 +331,22 @@
 
     Generated code:
 
-    PUSHMT      % 3.b.2
-    PUSH 2      % 3.b.2 - size of parameters plus one
-    SUB         % 3.b.2
-    ADDR 0 0    % 3.b.2 - get static link (one lexical level up)
-    STORE       % 3.b.2 - store the static link in its correct location
-    PUSHMT      % 3.b.2
-    PUSH 1      % 3.b.2 - size of parameters
-    SUB         % 3.b.2
-    SETD 1      % 3.b.2
-    PUSH 0      % 3.b.2
-    PUSH 6      % 3.b.2 - size of remaining local variables
-    DUPN        % 3.b.2 - duplicate 0 to fill the local variables.
+    PUSHMT      % 3.b.1
+    PUSH 2      % 3.b.1 - size of parameters plus one
+    SUB         % 3.b.1
+    ADDR 0 0    % 3.b.1 - get static link (one lexical level up)
+    STORE       % 3.b.1 - store the static link in its correct location
+    PUSHMT      % 3.b.1
+    PUSH 1      % 3.b.1 - size of parameters
+    SUB         % 3.b.1
+    SETD 1      % 3.b.1
+    PUSH 0      % 3.b.1
+    PUSH 6      % 3.b.1 - size of remaining local variables
+    DUPN        % 3.b.1 - duplicate 0 to fill the local variables.
 
     c. procedure and function exit code
 
-    For exit code, procedures and functions differ. Again, we have two locations: the call site and the routine interior. The call site code will be similar for both routine types. The difference will simply be minding the added return value of functions. Once we return to the call site, we simply need to reset our display table. This will be described in more detail in 3.g, but effectively this will be a series of compile time operations which load the static links, uses SETD to assign the display for that lexical level, and then continues recursively. For the initial static link, we will simply use the current local variable sizes (plus 1, and if it is a function, plus another 1) and subtract that from our stack pointer and that will give us the initial static link (which means we do not need to store the dynamic link). Once the display is reset, we can continue on in this line of execution.
-
-    Now the routine interior. We will consider procedures first (as they are simpler). First, when generating code for procedures, we will have the main code section, and the cleanup section. The main code will be generated from the statements of the procedure. The cleanup section will follow this, and will handle procedure exiting. So whenever a return statement is hit, we will simply push the address of the cleanup section and BR. Notice that if no return statement is hit, we will naturally move to the cleanup section (since it is after the main code).
+    For exit code, procedures and functions differ. Again, we will assume the call site is handled correctly. For the routine interior, We will consider procedures first (as they are simpler). First, when generating code for procedures, we will have the main code section, and the cleanup section. The main code will be generated from the statements of the procedure. The cleanup section will follow this, and will handle procedure exiting. So whenever a return statement is hit, we will simply push the address of the cleanup section and BR. Notice that if no return statement is hit, we will naturally move to the cleanup section (since it is after the main code).
 
     Example code:
 
@@ -443,3 +422,79 @@
     SWAP        % 3.c.4 - swap the return value and the return address
     BR          % 3.c.4 - return to the call site.
     
+    d. parameter passing
+
+    Parameter passing will simply occur after a routine call creates the activation record. To do parameter passing, we simply evaluate the parameter expressions in order. After this the parameters will simply be the top most values on the stack (which will correspond to the first few local variables). Example code for this will be in 3.e.
+
+    e. function call and function value return
+
+    Function calls must create the activation record, setup the parameters, and finally jump to the function. First the activation record holds 3 values: the dynamic link, the return address, and the static link. We can set these up quite easily. First the dynamic link can be acquired by simply using ADDR. The return address will be generated at compile time at the call site. The static link cannot actually be created here (that is handled inside the function), but in order to create a complete activation record, we must make a space for it, so we can simply PUSH 0. Next we must evaluate the parameters in order, as explained in 3.e. Finally, we PUSH the function address and use BR to jump there.
+
+    Example code:
+
+    {
+        function f(a : integer, b : integer) : integer {
+            return with 7
+        }
+        write f(4, 7)   % 3.e.1
+    }
+
+    Generated code:
+
+    ADDR 1 0                    % 3.e.1
+    PUSH <address after branch> % 3.e.1
+    PUSH 0                      % 3.e.1 - make space for the static link
+    PUSH 4                      % 3.e.1 - evaluate parameter 1
+    PUSH 7                      % 3.e.1 - evaluate parameter 2
+    PUSH <address of function>  % 3.e.1
+    BR                          % 3.e.1
+
+    When the function returns, the only remaining values on the stack (related to the function) are the dynamic link and the return value (in bottom to top order). When returning, we must first reset the display table. This will be described in more detail in 3.g, but in order for this to occur we must first SWAP to put the dynamic link at the top. Once the display management strategy is completed, the only remaining value on the stack will be the function return value, and we can treat this as an expression just as before.
+
+    Example code:
+    
+    {
+        function f(a : integer, b : integer) : integer {
+            return with 7
+        }
+        write f(4, 7)   % 3.e.2
+    }
+
+    Generated code:
+
+    SWAP    % 3.e.2
+    % Perform display management strategy
+
+    f. procedure call
+    
+    Procedure calls work just the same as function calls. The only distinction is after returning from the procedure. In this case, the only value of the stack will be the dynamic link. We will use this for the display management strategy, after which we can continue to other statements in the execution line.
+
+    g. display management strategy
+
+    To manage the display, we must first recognize that calling routines correctly manages display. This is because when calling a routine, we only modify the lexical level of that routine. This is correct, since all larger lexical levels will not be usable until they are reassigned (by another routine call), and smaller lexical levels will already be correct. In addition, the static links are correctly assigned as they are always assigned to the preceding lexical level. So we need only consider when returning from a routine.
+
+    Our display management strategy has two steps. The initial step, uses the dynamic link from the activation record of a routine. It uses SETD to reset the current lexical level's display address. All steps after this are the second type. In these steps, we look at the static link at the current display, use that to SETD for the lexical level, and then perform this recursively. We terminate once we have assigned the lexical level of 0. An example will make this much more clear.
+
+    Example code:
+
+    {
+        procedure p {
+            procedure q {
+                procedure r {
+
+                }
+                r   % 3.g.1
+            }
+            q
+        }
+        p
+    }
+
+    Generated code (after the branch to jump to r):
+
+    SETD 2      % 3.g.1 - use dynamic link to set q's lexical level
+    ADDR 2 -1   % 3.g.1 - get static link of q
+    SETD 1      % 3.g.1 - set p's lexical level
+    ADDR 1 -1   % 3.g.1 - get static link of p
+    SETD 0      % 3.g.1 - set main's lexical level
+
