@@ -585,13 +585,15 @@
 
     // TODO: forgot to handle popping variables when exiting
 
-    First, we will begin with exit statements (with an optional number of loops). These will simply be a BR command to the address after the associated loop. For an exit statement with a "when" expression, we must first evaluate the expression. Next, we take the NOT of this (since we want to branch if true). Finally, we use BF to jump to the address after the associated loop. Notice that since the number of loops doesn't affect the "when" expression, these can be easily merged with no issues.
+    First, we will begin with exit statements (with an optional number of loops) without the expression. These will simply be first popping the correct number of variables off the stack (using POPN), followed by a BR command to the address after the associated loop. The POPN only need occur if there are variables to be popped off since we entered the loop iteration. For an exit statement with a "when" expression, we must first evaluate the expression. Then we use a BF command that will skip to after the exit statement. This is since we only want to use the exit statement if the expresion is true. Next, we must use POPN just as before to pop the variables declared since the start of the iteration, and finally we use BR to go to the statement after the associated loop.
 
     Example code:
 
     {
         while true do {
+            var x : integer
             while true do {
+                var y, z : integer
                 exit when true  % 4.d.1
 
                 exit 2          % 4.d.2
@@ -601,14 +603,19 @@
 
     Generated code:
 
-    PUSH 1                          % 4.d.1 - for boolean not
     PUSH 1                          % 4.d.1 - condition
-    SUB                             % 4.d.1 - take the not
-    PUSH <address after inner loop> % 4.d.1
+    PUSH <address after exit>       % 4.d.1
     BF                              % 4.d.1
+    PUSH 2                          % 4.d.1 - the number of variables we need to pop off the stack: y, z
+    POPN                            % 4.d.1
+    PUSH <address after inner loop> % 4.d.1
+    BR                              % 4.d.1
+    % This is address after exit
 
-    We split these to distinguish the two statements, but in the actual code, these would be touching tip to tail.
+    We split these to distinguish the two statements, but in the actual code, these would be touching tip to tail. Note that the POPN in the second statement will not be reached if the first statement evaluates to true, so we will never "free" the memory twice.
 
+    PUSH 3                          % 4.d.2 - the number of variables to pop off: x, y, z
+    POPN                            % 4.d.2
     PUSH <address after outer loop> % 4.d.2
     BR                              % 4.d.2
 
