@@ -498,3 +498,160 @@
     ADDR 1 -1   % 3.g.1 - get static link of p
     SETD 0      % 3.g.1 - set main's lexical level
 
+4. statements
+
+    a. assignment statement
+
+    To perform an assignment, we will first need to access the left side, so we write the code to collect the address of the left side. Then we evaluate the expression on the right, and finally we perform a STORE to set the variable.
+
+    Example code:
+
+    {
+        var x, y : integer
+
+        y := 3  % 4.a.1
+    }
+
+    Generated code:
+
+    ADDR 0 1    % 4.a.1 - collect address of variable
+    PUSH 3      % 4.a.1 - evaluate right expression
+    STORE       % 4.a.1
+
+    b. if statements
+
+    An if statement will first evaluate its condition, and then perform a BF to decide whether to skip over the "true" block. If the statement has an "else" block, the "true" block's code must also end in a BR to jump over the "else" block. Otherwise, we can simply omit this branch and the "true" block will simply fall down to the remainder of the code.
+
+    Example code:
+
+    {
+        var x : integer
+        if true then x := 3 else x := 5     % 4.b.1
+    }
+
+    Generated code:
+
+    PUSH 1                          % 4.b.1 - evaluate condition
+    PUSH <address of else block>    % 4.b.1
+    BF                              % 4.b.1
+    ADDR 0 0                        % 4.b.1 - true block statement
+    PUSH 3                          % 4.b.1 - true block statement
+    STORE                           % 4.b.1 - true block statement
+    PUSH <address after else block> % 4.b.1
+    BR                              % 4.b.1
+    ADDR 0 0                        % 4.b.1 - false block statement, this point is address of else block
+    PUSH 5                          % 4.b.1 - false block statement
+    STORE                           % 4.b.1 - false block statement
+    % This is address after else block
+    
+    c. while and repeat statements
+
+    These statements have a very similar structure. First, we evaluate the condition. If this is a repeat loop, we take the NOT of this (since we want to leave the loop once the condition is true). Next, we use BF to skip to the end of the loop if the condition is incorrect. Finally, we generate the code for the body, followed by a BR to return us to the top of the statement code.
+
+    Example code:
+
+    {
+        while true do {
+            write 0                 % 4.c.1
+        }
+        repeat write 0 until true   % 4.c.2
+    }
+
+    Generated code:
+
+    PUSH 1                          % 4.c.1 - evaluate condition, this is address of start of loop
+    PUSH <address after loop>       % 4.c.1
+    BF                              % 4.c.1
+    PUSH 0                          % 4.c.1 - code for body
+    PRINTI                          % 4.c.1 - code for body
+    PUSH <address of start of loop> % 4.c.1
+    BR                              % 4.c.1
+    % This is address after loop
+
+    To make it clear the distinction, these are separated for each loop, but in the actual code, these would be touching tip to tail.
+
+    PUSH 1                          % 4.c.2 - to take the boolean not, this is address of start of loop
+    PUSH 1                          % 4.c.2 - evaluate condition
+    SUB                             % 4.c.2 - take the boolean not
+    PUSH <address after loop>       % 4.c.2
+    BF                              % 4.c.2
+    PUSH 0                          % 4.c.2 - code for body
+    PRINTI                          % 4.c.2 - code for body
+    PUSH <address of start of loop> % 4.c.2
+    BR                              % 4.c.2
+    % This is address after loop
+
+    d. exit statements
+
+    // TODO: forgot to handle popping variables when exiting
+
+    First, we will begin with exit statements (with an optional number of loops). These will simply be a BR command to the address after the associated loop. For an exit statement with a "when" expression, we must first evaluate the expression. Next, we take the NOT of this (since we want to branch if true). Finally, we use BF to jump to the address after the associated loop. Notice that since the number of loops doesn't affect the "when" expression, these can be easily merged with no issues.
+
+    Example code:
+
+    {
+        while true do {
+            while true do {
+                exit when true  % 4.d.1
+
+                exit 2          % 4.d.2
+            }
+        }
+    }
+
+    Generated code:
+
+    PUSH 1                          % 4.d.1 - for boolean not
+    PUSH 1                          % 4.d.1 - condition
+    SUB                             % 4.d.1 - take the not
+    PUSH <address after inner loop> % 4.d.1
+    BF                              % 4.d.1
+
+    We split these to distinguish the two statements, but in the actual code, these would be touching tip to tail.
+
+    PUSH <address after outer loop> % 4.d.2
+    BR                              % 4.d.2
+
+    e. return statements
+
+    Return statements were described in 2.c (since they are heavily linked with the exit code of a function). To summarise, for procedures, the return statement will simply branch to the cleanup code of the procedure. For functions, the return statement first evaluates the expression and then branches to the cleanup code of the function.
+
+    f. read and write statements
+
+    // TODO
+
+    g. minor scopes
+
+    Minor scopes simply initialize their local variables just like routines. Upon exiting a minor scope however, we must also pop all local variables off the stack. Other than these two facts, minor scopes change nothing else about execution.
+
+    Example code:
+
+    {
+        {   % 4.g.1
+            var x, y: integer
+            write 0
+        }   % 4.g.2
+    }
+
+    Generated code:
+
+    PUSH 0  % 4.g.1
+    PUSH 2  % 4.g.1
+    DUPN    % 4.g.1
+
+    PUSH 2  % 4.g.2
+    POPN    % 4.g.2
+
+5. everything else
+
+    a. main program initialization and termination
+
+    On initialization, we must first assign the main scope to the display. We can do this using PUSHMT followed by SETD 0. Next, we must initialize the main scope's variables. We can do this just the same as routines or minor scopes: using DUPN. For termination, we perform some small cleanup tasks, such as using POPN to remove all remaining variables, and finally calling the HALT command. While removing remaining variables may not be necessary, it does protect us from strange issues in the machine if there is reuse.
+
+    b. extra scope handling
+
+    Most of the scope handling will be done at compile time. For example, managing where variables will be is done during semantic analysis. These offsets are then just used to address these variables when performing code generation.
+
+    c. extra info
+
+    Nothing else to report.
