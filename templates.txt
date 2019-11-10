@@ -618,7 +618,41 @@
 
     f. read and write statements
 
-    // TODO
+    Write statements are simple. First, we can treat writing multiple things as several completely separate write statements. That is, "write 0, 1, 2" is the same as "write 0 write 1 write 2". Next, we need to distinguish between writing integers and writing text constants. For writing integers, we need only evaluate the expression and then call PRINTI. For writing text constants, we use the strategy described in 1.e. We push and write each character individually. This means at runtime we need only 1 spot on the stack as opposed to enough places to store the entire string.
+
+    Example code:
+
+    {
+        write 7, "hello"    % 4.f.1
+    }
+
+    Generated code:
+    PUSH 7      % 4.f.1 - evaluate expression
+    PRINTI      % 4.f.1
+    PUSH "h"    % 4.f.1
+    PRINTC      % 4.f.1
+    PUSH "e"    % 4.f.1
+    PRINTC      % 4.f.1
+    PUSH "l"    % 4.f.1
+    PRINTC      % 4.f.1
+    PUSH "l"    % 4.f.1
+    PRINTC      % 4.f.1
+    PUSH "o"    % 4.f.1
+    PRINTC      % 4.f.1
+
+    For read statements, we perform something similar. First, we get the address of the variable we want to store into. Then we call READI. Note that the machine also has a READC command, but as our language does not support text operations other than writing, it goes unused.
+
+    Example code:
+
+    {
+        var x : integer
+        read x  % 4.f.2
+    }
+
+    Generated code:
+
+    ADDR 0 0    % 4.f.2 - address of x
+    READI       % 4.f.2
 
     g. minor scopes
 
