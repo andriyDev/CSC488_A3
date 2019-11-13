@@ -79,6 +79,7 @@ public class FunctionCallExpn extends Expn {
 		g.addInstruction(routineAddress); // Note that this routine address may be -1, but it will be overwritten once the routine is generated.
 		g.addInstruction(Machine.BR); // Jump to the function
 		g.setInstruction(addressAfterBranch, g.getPosition());
+		g.addInstruction(Machine.SWAP);
 		// TODO: Display management strategy
 	}
 }
