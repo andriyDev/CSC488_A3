@@ -222,9 +222,11 @@ public class CodeGen {
 		} else {
 			// For minor scopes, we can easily calculate the number of statements we have to leave in order to make it work.
 			int space = scope.offset - scope.parent.offset;
-			addInstruction(Machine.PUSH);
-			addInstruction(space);
-			addInstruction(Machine.POPN);
+			if(space != 0) {
+				addInstruction(Machine.PUSH);
+				addInstruction(space);
+				addInstruction(Machine.POPN);
+			}
 		}
 	}
 

@@ -251,7 +251,7 @@ public class Semantics {
 			return true;
 		}
 
-		if(actionNumber == 2) {
+		if(actionNumber == 0) {
 			symbols.allScopes.put(target, symbols.globalScope);
 			return true;
 		}
