@@ -64,7 +64,7 @@ public class CodeGen {
 	private SymbolTable symbols;
 
 	private Stack<SymbolTable.SymbolScope> scopeStack;
-	private Stack<Stack<Pair<AST, SymbolTable.SymbolScope>>> loopStack;
+	private Stack<Pair<AST, SymbolTable.SymbolScope>> loopStack;
 	private HashMap<Integer, List<Integer>> awaitingLoops;
 
 	private Queue<AST> routinesToGenerate;
@@ -177,11 +177,11 @@ public class CodeGen {
 		boolean isMajorScope;
 		if(scope.lexicalLevel == 0) {
 			isMajorScope = true;
-			loopStack.push(new Stack<>());
+			loopStack = new Stack<>();
 		} else {
 			isMajorScope = scope.lexicalLevel - scope.parent.lexicalLevel == 1;
 			if(isMajorScope) {
-				loopStack.push(new Stack<>());
+				loopStack = new Stack<>();
 			}
 		}
 
@@ -234,25 +234,25 @@ public class CodeGen {
 
 	public void enterLoop(AST loop) {
 		// When entering a loop, we want to keep track of which scope to return to, which is the scope that contains the loop statement
-		loopStack.peek().push(new Pair<>(loop, scopeStack.peek()));
+		loopStack.push(new Pair<>(loop, scopeStack.peek()));
 	}
 
 	public void exitLoop(int address) {
 		// When leaving a loop, we just leave the top most.
-		loopStack.peek().pop();
-		if(awaitingLoops.containsKey(loopStack.peek().size())) {
-			for(Integer awaitAddr : awaitingLoops.get(loopStack.peek().size())) {
+		loopStack.pop();
+		if(awaitingLoops.containsKey(loopStack.size())) {
+			for(Integer awaitAddr : awaitingLoops.get(loopStack.size())) {
 				setInstruction(awaitAddr, address);
 			}
 			// We don't want to set those instructions again.
-			awaitingLoops.remove(loopStack.peek().size());
+			awaitingLoops.remove(loopStack.size());
 		}
 	}
 
 	public int getLoopExitSize(int count) {
-		assert loopStack.peek().size() <= count;
+		assert loopStack.size() <= count;
 		// Get the scope we want to return to.
-		SymbolTable.SymbolScope jumpToScope = loopStack.peek().get(loopStack.size() - count).getValue();
+		SymbolTable.SymbolScope jumpToScope = loopStack.get(loopStack.size() - count).getValue();
 		// Get the current scope.
 		SymbolTable.SymbolScope currentScope = scopeStack.peek();
 		// Take the difference.
@@ -285,7 +285,7 @@ public class CodeGen {
 	}
 
 	public void awaitLoopAddress(int depth, int address) {
-		int targetLoop = loopStack.peek().size() - depth;
+		int targetLoop = loopStack.size() - depth;
 		awaitingLoops.putIfAbsent(targetLoop, new LinkedList<>());
 		awaitingLoops.get(targetLoop).add(address);
 	}
