@@ -175,7 +175,7 @@ public class CodeGen {
 	public void enterScope(SymbolTable.SymbolScope scope) {
 		scopeStack.push(scope);
 		boolean isMajorScope;
-		if(scope.lexicalLevel == 0) {
+		if(scope.parent == null) {
 			isMajorScope = true;
 			loopStack = new Stack<>();
 		} else {
@@ -204,14 +204,10 @@ public class CodeGen {
 	public void exitScope(SymbolTable.SymbolScope scope) {
 		boolean isMajorScope;
 		scopeStack.pop();
-		if(scope.lexicalLevel == 0) {
+		if(scope.parent == null) {
 			isMajorScope = true;
-			loopStack.pop();
 		} else {
 			isMajorScope = scope.lexicalLevel - scope.parent.lexicalLevel == 1;
-			if(isMajorScope) {
-				loopStack.pop();
-			}
 		}
 
 		// For major scopes, we remove all variables by using the current scope link
