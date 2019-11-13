@@ -583,8 +583,6 @@
 
     d. exit statements
 
-    // TODO: forgot to handle popping variables when exiting
-
     First, we will begin with exit statements (with an optional number of loops) without the expression. These will simply be first popping the correct number of variables off the stack (using POPN), followed by a BR command to the address after the associated loop. The POPN only need occur if there are variables to be popped off since we entered the loop iteration. For an exit statement with a "when" expression, we must first evaluate the expression. Then we use a BF command that will skip to after the exit statement. This is since we only want to use the exit statement if the expresion is true. Next, we must use POPN just as before to pop the variables declared since the start of the iteration, and finally we use BR to go to the statement after the associated loop.
 
     Example code:
@@ -695,4 +693,4 @@
 
     c. extra info
 
-    Nothing else to report.
+    Routine code will come in a "breadth first" ordering after the main program code. There is no particular reason for the ordering, it's just one of the simplest orderings.
