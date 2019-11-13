@@ -74,9 +74,10 @@ public class ProcedureCallStmt extends Stmt {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
+		int ll = g.getCurrentLexicalLevel();
 		// Creating the activation record
 		g.addInstruction(Machine.ADDR);
-		g.addInstruction(g.getCurrentLexicalLevel());
+		g.addInstruction(ll);
 		g.addInstruction(0);
 		g.addInstruction(Machine.PUSH);
 		int addressAfterBranch = g.getPosition();
@@ -92,6 +93,16 @@ public class ProcedureCallStmt extends Stmt {
 		g.addInstruction(routineAddress); // Note that this routine address may be -1, but it will be overwritten once the routine is generated.
 		g.addInstruction(Machine.BR); // Jump to the function
 		g.setInstruction(addressAfterBranch, g.getPosition());
-		// TODO: Display management strategy
+
+		// Display Management Strategy
+		for(int i = ll; i >= 0; i--) {
+			if(i != ll) {
+				g.addInstruction(Machine.ADDR);
+				g.addInstruction(i + 1);
+				g.addInstruction(-1);
+			}
+			g.addInstruction(Machine.SETD);
+			g.addInstruction(i);
+		}
 	}
 }

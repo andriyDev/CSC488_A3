@@ -198,7 +198,7 @@ public class RoutineDecl extends Declaration {
 
 		g.resolveExitCode(g.getPosition());
 
-		if(sym.resultantType != null) {
+		if(sym.resultantType != Symbol.DataType.None) {
 			g.addInstruction(Machine.ADDR);
 			g.addInstruction(scope.lexicalLevel);
 			g.addInstruction(-1);
@@ -208,8 +208,10 @@ public class RoutineDecl extends Declaration {
 
 		g.exitScope(scope);
 
-		// Swap the return address with the remaining return value.
-		g.addInstruction(Machine.SWAP);
+		if(sym.resultantType != Symbol.DataType.None) {
+			// Swap the return address with the remaining return value.
+			g.addInstruction(Machine.SWAP);
+		}
 		// Return
 		g.addInstruction(Machine.BR);
 	}

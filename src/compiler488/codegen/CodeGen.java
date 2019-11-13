@@ -138,10 +138,13 @@ public class CodeGen {
 			if(target instanceof RoutineDecl) {
 				int routineAddress = getPosition();
 				routinePointers.put(((RoutineDecl)target).sym, routineAddress);
-				for(Integer addr : awaitingRoutinePointer.get(((RoutineDecl)target).sym)) {
-					setInstruction(addr, routineAddress);
+				Symbol sym = ((RoutineDecl)target).sym;
+				if (awaitingRoutinePointer.containsKey(sym)) {
+					for(Integer addr : awaitingRoutinePointer.get(sym)) {
+						setInstruction(addr, routineAddress);
+					}
+					awaitingRoutinePointer.remove(sym);
 				}
-				awaitingRoutinePointer.remove(((RoutineDecl)target).sym);
 				awaitingExitCode = new LinkedList<>();
 			}
 			target.performCodeGeneration(this);
@@ -216,7 +219,7 @@ public class CodeGen {
 			addInstruction(Machine.PUSHMT);
 			addInstruction(Machine.ADDR);
 			addInstruction(scope.lexicalLevel);
-			addInstruction(scope.creatingSymbol != null && scope.creatingSymbol.resultantType == null ? -1 : 0);
+			addInstruction(scope.creatingSymbol != null && scope.creatingSymbol.resultantType == Symbol.DataType.None ? -1 : 0);
 			addInstruction(Machine.SUB);
 			addInstruction(Machine.POPN);
 		} else {
@@ -258,7 +261,7 @@ public class CodeGen {
 	}
 
 	public int getCurrentLexicalLevel() {
-		return loopStack.size() - 1;
+		return getCurrentScope().lexicalLevel;
 	}
 
 	public SymbolTable getSymbols() {
@@ -275,7 +278,7 @@ public class CodeGen {
 		if(routinePointers.containsKey(sym)) {
 			return routinePointers.get(sym);
 		}
-		if(awaitingRoutinePointer.containsKey(sym)) {
+		if(!awaitingRoutinePointer.containsKey(sym)) {
 			awaitingRoutinePointer.put(sym, new LinkedList<>());
 		}
 		awaitingRoutinePointer.get(sym).add(targetAddress);

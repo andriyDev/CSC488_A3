@@ -61,9 +61,10 @@ public class FunctionCallExpn extends Expn {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
+		int ll = g.getCurrentLexicalLevel();
 		// Creating the activation record
 		g.addInstruction(Machine.ADDR);
-		g.addInstruction(g.getCurrentLexicalLevel());
+		g.addInstruction(ll);
 		g.addInstruction(0);
 		g.addInstruction(Machine.PUSH);
 		int addressAfterBranch = g.getPosition();
@@ -81,6 +82,16 @@ public class FunctionCallExpn extends Expn {
 		g.setInstruction(addressAfterBranch, g.getPosition());
 		// We need to swap for function calls
 		g.addInstruction(Machine.SWAP);
-		// TODO: Display management strategy
+
+		// Display Management Strategy
+		for(int i = ll; i >= 0; i--) {
+			if(i != ll) {
+				g.addInstruction(Machine.ADDR);
+				g.addInstruction(i + 1);
+				g.addInstruction(-1);
+			}
+			g.addInstruction(Machine.SETD);
+			g.addInstruction(i);
+		}
 	}
 }
