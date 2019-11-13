@@ -3,7 +3,11 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
+
+import javax.crypto.Mac;
 
 /**
  * Represents an if-then or an if-then-else construct.
@@ -80,5 +84,27 @@ public class IfStmt extends Stmt {
 			return false;
 		}
 		return whenTrue.hasReturn() && whenFalse.hasReturn();
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		condition.performCodeGeneration(g);
+		g.addInstruction(Machine.PUSH);
+		int addressOfElseBlock = g.getPosition();
+		g.addInstruction(0); // Temporary slot for the else address
+		g.addInstruction(Machine.BF);
+		whenTrue.performCodeGeneration(g);
+		if(whenFalse == null) {
+			g.setInstruction(addressOfElseBlock, g.getPosition());
+		} else {
+			g.addInstruction(Machine.PUSH);
+			int addressAfterElseBlock = g.getPosition();
+			g.addInstruction(0);
+			g.addInstruction(Machine.BR);
+
+			g.setInstruction(addressOfElseBlock, g.getPosition());
+			whenFalse.performCodeGeneration(g);
+			g.setInstruction(addressAfterElseBlock, g.getPosition());
+		}
 	}
 }

@@ -2,6 +2,8 @@ package compiler488.ast.stmt;
 
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -62,5 +64,16 @@ public class ReturnStmt extends Stmt {
 	@Override
 	public boolean hasReturn() {
 		return true;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		if(value != null) {
+			value.performCodeGeneration(g);
+		}
+		g.addInstruction(Machine.PUSH);
+		g.awaitExitCode(g.getPosition());
+		g.addInstruction(0); // Space for exit code address
+		g.addInstruction(Machine.BR);
 	}
 }

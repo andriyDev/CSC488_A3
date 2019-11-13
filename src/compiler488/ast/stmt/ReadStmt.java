@@ -4,6 +4,8 @@ import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.Readable;
 import compiler488.ast.expn.Expn;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -35,6 +37,14 @@ public class ReadStmt extends Stmt {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		for(Readable element : inputs) {
+			element.generateCodeForAccessor(g);
+			g.addInstruction(Machine.READI);
+		}
 	}
 
 	public ASTList<Readable> getInputs() {

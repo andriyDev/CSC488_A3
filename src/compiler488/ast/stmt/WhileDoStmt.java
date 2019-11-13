@@ -3,6 +3,7 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.expn.Expn;
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
 
 /**
@@ -32,5 +33,10 @@ public class WhileDoStmt extends LoopingStmt {
 		}
 		result &= s.semanticAction(56, this);
 		return result;
+	}
+
+	@Override
+	public void generateConditionCheck(CodeGen g) {
+		expn.performCodeGeneration(g);
 	}
 }

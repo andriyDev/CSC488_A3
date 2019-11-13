@@ -1,5 +1,7 @@
 package compiler488.ast;
 
+import compiler488.codegen.CodeGen;
+
 /**
  * Any AST node that can be an argument in a GET statement.
  *
@@ -8,4 +10,6 @@ package compiler488.ast;
  * </p>
  */
 public interface Readable extends AST {
+
+    public void generateCodeForAccessor(CodeGen g);
 }

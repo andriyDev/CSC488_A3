@@ -8,6 +8,4 @@ import compiler488.codegen.CodeGen;
  * A placeholder for all expressions.
  */
 public abstract class Expn extends BaseAST implements Printable {
-
-    public void generateCodeForAccessor(CodeGen g) { throw new RuntimeException("Expression cannot be an accessor"); }
 }

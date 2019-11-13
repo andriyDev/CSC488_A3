@@ -1,6 +1,5 @@
 package compiler488.codegen;
 
-import java.io.*;
 import java.util.*;
 
 import compiler488.Pair;
@@ -12,8 +11,6 @@ import compiler488.runtime.Machine;
 import compiler488.runtime.MemoryAddressException;
 import compiler488.symbol.Symbol;
 import compiler488.symbol.SymbolTable;
-
-import static compiler488.symbol.Symbol.DataType.None;
 
 /**
  * CodeGenerator.java
@@ -74,6 +71,7 @@ public class CodeGen {
 
 	private HashMap<Symbol, Integer> routinePointers;
 	private HashMap<Symbol, List<Integer>> awaitingRoutinePointer;
+	private List<Integer> awaitingExitCode;
 
 	private int memoryPosition = 0;
 
@@ -149,6 +147,7 @@ public class CodeGen {
 			if(target instanceof RoutineDecl) {
 				int routineAddress = getPosition();
 				// TODO: Store this address in routinePointers and clear out the awaiting routine pointer stuff.
+				awaitingExitCode = new LinkedList<>();
 			}
 			target.performCodeGeneration(this);
 		}
@@ -256,6 +255,8 @@ public class CodeGen {
 			for(Integer awaitAddr : awaitingLoops.get(loopStack.peek().size())) {
 				setInstruction(awaitAddr, address);
 			}
+			// We don't want to set those instructions again.
+			awaitingLoops.remove(loopStack.peek().size());
 		}
 	}
 
@@ -296,6 +297,11 @@ public class CodeGen {
 
 	public void awaitLoopAddress(int depth, int address) {
 		int targetLoop = loopStack.peek().size() - depth;
-		awaitingLoops.putIfAbsent(targetLoop, new LinkedList<>()).add(address);
+		awaitingLoops.putIfAbsent(targetLoop, new LinkedList<>());
+		awaitingLoops.get(targetLoop).add(address);
+	}
+
+	public void awaitExitCode(int address) {
+		awaitingExitCode.add(address);
 	}
 }

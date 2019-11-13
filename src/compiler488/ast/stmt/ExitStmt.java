@@ -1,6 +1,8 @@
 package compiler488.ast.stmt;
 
 import compiler488.ast.expn.*;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -11,7 +13,7 @@ public class ExitStmt extends Stmt {
 	private Expn expn = null;
 
 	/** Number of levels to exit. */
-	private Integer level = -1;
+	private Integer level = 1;
 
 	public ExitStmt() {
 		super();
@@ -81,11 +83,32 @@ public class ExitStmt extends Stmt {
 		}
 
 		result &= s.semanticAction(50, this);
-		if(level != -1)
-		{
-			// Use this object to figure out if there are enough loops to leave.
-			result &= s.semanticAction(53, this);
-		}
+		// Use this object to figure out if there are enough loops to leave.
+		result &= s.semanticAction(53, this);
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		int addressAfterExit = 0;
+		if(expn != null) {
+			expn.performCodeGeneration(g);
+			g.addInstruction(Machine.PUSH);
+			addressAfterExit = g.getPosition();
+			g.addInstruction(0); // Temporary slot
+		}
+		int size = g.getLoopExitSize(level);
+		if(size != 0) {
+			g.addInstruction(Machine.PUSH);
+			g.addInstruction(size);
+			g.addInstruction(Machine.POPN);
+		}
+		g.addInstruction(Machine.PUSH);
+		g.awaitLoopAddress(level, g.getPosition());
+		g.addInstruction(0); // Temporary address
+		g.addInstruction(Machine.BR);
+		if(expn != null) {
+			g.setInstruction(addressAfterExit, g.getPosition());
+		}
 	}
 }

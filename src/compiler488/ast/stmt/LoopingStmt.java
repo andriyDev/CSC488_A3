@@ -2,6 +2,9 @@ package compiler488.ast.stmt;
 
 import compiler488.ast.ASTList;
 import compiler488.ast.expn.Expn;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
+import jdk.jshell.spi.ExecutionControl;
 
 /**
  * Represents the common parts of loops.
@@ -40,5 +43,28 @@ public abstract class LoopingStmt extends Stmt {
 			}
 		}
 		return false;
+	}
+
+	public abstract void generateConditionCheck(CodeGen g);
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		int loopStart = g.getPosition();
+		generateConditionCheck(g);
+		g.addInstruction(Machine.PUSH);
+		int addressOfAfterLoop = g.getPosition();
+		g.addInstruction(0); // Temporary address slot
+		g.addInstruction(Machine.BF);
+		g.enterLoop(this);
+
+		for(Stmt s : body) {
+			s.performCodeGeneration(g);
+		}
+		g.addInstruction(Machine.PUSH);
+		g.addInstruction(loopStart);
+		g.addInstruction(Machine.BR);
+
+		g.exitLoop(g.getPosition());
+		g.setInstruction(addressOfAfterLoop, g.getPosition());
 	}
 }

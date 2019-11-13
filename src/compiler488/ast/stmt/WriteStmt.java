@@ -6,6 +6,8 @@ import compiler488.ast.Printable;
 import compiler488.ast.expn.Expn;
 import compiler488.ast.expn.SkipConstExpn;
 import compiler488.ast.expn.TextConstExpn;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -39,6 +41,29 @@ public class WriteStmt extends Stmt {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		for(Printable element : outputs) {
+			if (element instanceof Expn) {
+				if(element instanceof SkipConstExpn) {
+					g.addInstruction(Machine.PUSH);
+					g.addInstruction('\n');
+					g.addInstruction(Machine.PRINTC);
+				} else if(element instanceof TextConstExpn) {
+					String s = ((TextConstExpn)element).getValue();
+					for(char c : s.toCharArray()) {
+						g.addInstruction(Machine.PUSH);
+						g.addInstruction(c);
+						g.addInstruction(Machine.PRINTC);
+					}
+				} else {
+					((Expn)element).performCodeGeneration(g);
+					g.addInstruction(Machine.PRINTI);
+				}
+			} // We don't know what to do otherwise
+		}
 	}
 
 	public ASTList<Printable> getOutputs() {
