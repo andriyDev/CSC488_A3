@@ -4,7 +4,11 @@ import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.stmt.Scope;
 import compiler488.ast.type.Type;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
+import compiler488.symbol.Symbol;
+import compiler488.symbol.SymbolTable;
 
 /**
  * Represents the declaration of a function or procedure.
@@ -22,6 +26,8 @@ public class RoutineDecl extends Declaration {
 
 	/** The body of this routine (if any.) */
 	private Scope body = null;
+
+	public Symbol sym;
 
 	/**
 	 * Construct a function with parameters, and a definition of the body.
@@ -164,5 +170,47 @@ public class RoutineDecl extends Declaration {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		g.addInstruction(Machine.PUSHMT);
+		g.addInstruction(Machine.PUSH);
+		g.addInstruction(parameters.size() + 1);
+		g.addInstruction(Machine.SUB);
+		g.addInstruction(Machine.ADDR);
+		SymbolTable.SymbolScope scope = g.getSymbols().allScopes.get(this);
+		g.addInstruction(scope.lexicalLevel - 1);
+		g.addInstruction(0);
+		g.addInstruction(Machine.STORE);
+		g.addInstruction(Machine.PUSHMT);
+		if(parameters.size() != 0) {
+			g.addInstruction(Machine.PUSH);
+			g.addInstruction(parameters.size());
+			g.addInstruction(Machine.SUB);
+		}
+		g.addInstruction(Machine.SETD);
+		g.addInstruction(scope.lexicalLevel);
+
+		g.enterScope(scope);
+
+		body.performMainCodeGeneration(g);
+
+		g.resolveExitCode(g.getPosition());
+
+		if(sym.resultantType != null) {
+			g.addInstruction(Machine.ADDR);
+			g.addInstruction(scope.lexicalLevel);
+			g.addInstruction(-1);
+			g.addInstruction(Machine.SWAP);
+			g.addInstruction(Machine.STORE);
+		}
+
+		g.exitScope(scope);
+
+		// Swap the return address with the remaining return value.
+		g.addInstruction(Machine.SWAP);
+		// Return
+		g.addInstruction(Machine.BR);
 	}
 }

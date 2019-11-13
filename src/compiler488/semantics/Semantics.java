@@ -307,6 +307,7 @@ public class Semantics {
 				parameters.add(Symbol.DTFromAST(param.getType()));
 			}
 			lastRoutine = new Symbol(Symbol.DTFromAST(decl.getType()), parameters);
+			decl.sym = lastRoutine;
 			try {
 				currentScope.addSymbol(decl.getName(), lastRoutine);
 				return true;

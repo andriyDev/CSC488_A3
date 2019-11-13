@@ -116,26 +116,17 @@ public class CodeGen {
 	/**
 	 * Perform any required cleanup at the end of code generation. Called once
 	 * at the end of code generation.
-	 *
-	 * @throws MemoryAddressException
-	 *             from Machine.writeMemory
 	 */
-	void Finalize() throws MemoryAddressException {
+	void Finalize() {
 		/********************************************************/
 		/* Finalization code for the code generator GOES HERE. */
 		/*                                                      */
 		/* This procedure is called once at the end of code */
 		/* generation */
 		/********************************************************/
-
-		// REPLACE THIS CODE WITH YOUR OWN CODE
-		// THIS CODE generates a single HALT instruction
-		// as an example.
 		machine.setPC((short) 0); /* where code to be executed begins */
-		machine.setMSP((short) 1); /* where memory stack begins */
+		machine.setMSP((short) memoryPosition); /* where memory stack begins */
 		machine.setMLP((short) (Machine.MEMORY_SIZE - 1));
-		/* limit of stack */
-		machine.writeMemory((short) 0, Machine.HALT);
 	}
 
 	public boolean generate(Program AST) {
@@ -146,19 +137,17 @@ public class CodeGen {
 			AST target = routinesToGenerate.remove();
 			if(target instanceof RoutineDecl) {
 				int routineAddress = getPosition();
-				// TODO: Store this address in routinePointers and clear out the awaiting routine pointer stuff.
+				routinePointers.put(((RoutineDecl)target).sym, routineAddress);
+				for(Integer addr : awaitingRoutinePointer.get(((RoutineDecl)target).sym)) {
+					setInstruction(addr, routineAddress);
+				}
+				awaitingRoutinePointer.remove(((RoutineDecl)target).sym);
 				awaitingExitCode = new LinkedList<>();
 			}
 			target.performCodeGeneration(this);
 		}
 
-		try {
-			Finalize();
-		} catch (MemoryAddressException e) {
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-			return false;
-		}
+		Finalize();
 		return true;
 	}
 
@@ -303,5 +292,12 @@ public class CodeGen {
 
 	public void awaitExitCode(int address) {
 		awaitingExitCode.add(address);
+	}
+
+	public void resolveExitCode(int address) {
+		for(Integer await : awaitingExitCode) {
+			setInstruction(await, address);
+		}
+		awaitingExitCode.clear();
 	}
 }
