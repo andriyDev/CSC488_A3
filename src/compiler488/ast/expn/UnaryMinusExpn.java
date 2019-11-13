@@ -1,5 +1,7 @@
 package compiler488.ast.expn;
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -17,5 +19,11 @@ public class UnaryMinusExpn extends UnaryExpn {
         result &= s.semanticAction(31, getOperand());
         result &= s.semanticAction(21, this);
         return result;
+    }
+
+    @Override
+    public void performCodeGeneration(CodeGen g) {
+        getOperand().performCodeGeneration(g);
+        g.addInstruction(Machine.NEG);
     }
 }

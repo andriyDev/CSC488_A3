@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -18,5 +20,13 @@ public class NotExpn extends UnaryExpn {
         result &= s.semanticAction(30, getOperand());
         result &= s.semanticAction(20, this);
         return result;
+    }
+
+    @Override
+    public void performCodeGeneration(CodeGen g) {
+        g.addInstruction(Machine.PUSH);
+        g.addInstruction(1);
+        getOperand().performCodeGeneration(g);
+        g.addInstruction(Machine.SUB);
     }
 }

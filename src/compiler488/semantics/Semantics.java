@@ -99,10 +99,6 @@ public class Semantics {
 	void Finalize(){
 	
 	  /*  Finalize the symbol table                 */
-
-		if(symbols != null) {
-			symbols.Finalize();
-		}
 	  // Symbol.Finalize();
 	  
 	   /*********************************************/
@@ -255,7 +251,12 @@ public class Semantics {
 			return true;
 		}
 
-		SymbolTable.SymbolScope newScope = symbols.createNewScope(scopes.peek().getValue());
+		if(actionNumber == 2) {
+			symbols.allScopes.put(target, symbols.globalScope);
+			return true;
+		}
+
+		SymbolTable.SymbolScope newScope = symbols.createNewScope(scopes.peek().getValue(), target instanceof RoutineDecl ? getScopeSymbol(((RoutineDecl)target).getName()) : null, target);
 		if(actionNumber == 4) {
 			scopes.push(new Pair<>(ScopeType.Function, newScope));
 			// Action 13 will handle adding to funcInfo
@@ -729,5 +730,9 @@ public class Semantics {
 
 	public Symbol getScopeSymbol(String name) {
 		return scopes.peek().getValue().getSymbol(name);
+	}
+
+	public SymbolTable getSymbols() {
+		return symbols;
 	}
 }

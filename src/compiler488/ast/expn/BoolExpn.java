@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -27,5 +29,24 @@ public class BoolExpn extends BinaryExpn {
         result &= s.semanticAction(30, right);
         result &= s.semanticAction(20, this);
         return result;
+    }
+
+    @Override
+    public void performCodeGeneration(CodeGen g) {
+        left.performCodeGeneration(g);
+        right.performCodeGeneration(g);
+        switch (opSymbol) {
+            case OP_AND:
+                g.addInstruction(Machine.ADD);
+                g.addInstruction(Machine.PUSH);
+                g.addInstruction(2);
+                g.addInstruction(Machine.EQ);
+                return;
+            case OP_OR:
+                g.addInstruction(Machine.OR);
+                return;
+            default:
+                throw new RuntimeException("Invalid arithmetic expression!");
+        }
     }
 }

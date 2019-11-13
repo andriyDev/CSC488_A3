@@ -1,8 +1,11 @@
 package compiler488.ast.expn;
 
 import compiler488.ast.Readable;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 import compiler488.symbol.Symbol;
+import compiler488.Pair;
 
 /**
  * References to a scalar variable or function call without parameters.
@@ -47,5 +50,19 @@ public class IdentExpn extends Expn implements Readable {
 			result = s.semanticAction(57, this);
 		}
 		return result;
+	}
+
+	@Override
+	public void generateCodeForAccessor(CodeGen g) {
+		Pair<Integer, Integer> p = g.getCurrentScope().getSymbolLocation(ident);
+		g.addInstruction(Machine.ADDR);
+		g.addInstruction(p.getKey());
+		g.addInstruction(p.getValue());
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		generateCodeForAccessor(g);
+		g.addInstruction(Machine.LOAD);
 	}
 }

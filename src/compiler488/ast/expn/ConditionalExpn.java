@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /** Represents a conditional expression (i.e., x>0?3:4). */
@@ -57,5 +59,22 @@ public class ConditionalExpn extends Expn {
 		result &= s.semanticAction(33, this);
 		result &= s.semanticAction(24, this);
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		g.addInstruction(Machine.PUSH);
+		int addrOfFalseExprFillIn = g.getPosition();
+		g.addInstruction(0); // Temporary to be filled in later
+		condition.performCodeGeneration(g);
+		g.addInstruction(Machine.BF);
+		trueValue.performCodeGeneration(g);
+		g.addInstruction(Machine.PUSH);
+		int addrOfAfterFalseExprFillIn = g.getPosition();
+		g.addInstruction(0); // Temporary to be filled in later
+		g.addInstruction(Machine.BR);
+		g.setInstruction(addrOfFalseExprFillIn, g.getPosition()); // Fill in the address
+		falseValue.performCodeGeneration(g);
+		g.setInstruction(addrOfAfterFalseExprFillIn, g.getPosition()); // Fill in the address
 	}
 }

@@ -1,5 +1,6 @@
 package compiler488.ast;
 
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
 import compiler488.Pair;
 
@@ -21,6 +22,7 @@ public interface AST extends PrettyPrintable {
 	public void prettyPrint(PrettyPrinter p);
 
 	public boolean performSemanticAnalysis(Semantics s);
+	public void performCodeGeneration(CodeGen g);
 
 	public Pair<Integer, Integer> getPosition();
 }

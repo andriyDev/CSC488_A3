@@ -2,6 +2,8 @@ package compiler488.ast.expn;
 
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -55,5 +57,28 @@ public class FunctionCallExpn extends Expn {
 		}
 		result &= s.semanticAction(28, this);
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		// Creating the activation record
+		g.addInstruction(Machine.ADDR);
+		g.addInstruction(g.getCurrentLexicalLevel());
+		g.addInstruction(0);
+		g.addInstruction(Machine.PUSH);
+		int addressAfterBranch = g.getPosition();
+		g.addInstruction(0); // Space to put the address after branch
+		g.addInstruction(Machine.PUSH);
+		g.addInstruction(0); // Space for static link
+		// Parameters
+		for(Expn ex : arguments) {
+			ex.performCodeGeneration(g);
+		}
+		g.addInstruction(Machine.PUSH);
+		int routineAddress = g.getRoutineAddress(g.getCurrentScope().getSymbol(ident), g.getPosition());
+		g.addInstruction(routineAddress); // Note that this routine address may be -1, but it will be overwritten once the routine is generated.
+		g.addInstruction(Machine.BR); // Jump to the function
+		g.setInstruction(addressAfterBranch, g.getPosition());
+		// TODO: Display management strategy
 	}
 }

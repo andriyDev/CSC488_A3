@@ -45,6 +45,14 @@ public class Symbol {
                 this.maxY = decl.getUpperBoundary2();
             }
         }
+
+        public int getSize() {
+            if (this.is2d) {
+                return (maxX - minX + 1) * (maxY - minY + 1);
+            } else {
+                return maxX - minX + 1;
+            }
+        }
     }
 
     public DataType resultantType;
@@ -74,5 +82,16 @@ public class Symbol {
         this.parameters = parameters;
 
         this.bounds = null;
+    }
+
+    public int getDataSize() {
+        switch(this.type) {
+            case Routine:
+                return 0;
+            case Scalar:
+                return 1;
+            default:
+                return this.bounds.getSize();
+        }
     }
 }

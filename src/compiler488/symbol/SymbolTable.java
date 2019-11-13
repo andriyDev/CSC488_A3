@@ -1,5 +1,8 @@
 package compiler488.symbol;
 
+import compiler488.Pair;
+import compiler488.ast.AST;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -20,12 +23,23 @@ public class SymbolTable {
 
 	public static class SymbolScope {
 		public SymbolScope parent;
+		public Symbol creatingSymbol;
+		public int lexicalLevel;
+		public int offset;
 
-		public HashMap<String, Symbol> symbols;
+		public HashMap<String, Pair<Symbol, Integer>> symbols;
 
-		public SymbolScope(SymbolScope parent) {
+		public SymbolScope(SymbolScope parent, Symbol creatingSymbol) {
 			this.parent = parent;
-			this.symbols = new HashMap<String, Symbol>();
+			if(parent == null) {
+				lexicalLevel = 0;
+				offset = 0;
+			} else {
+				lexicalLevel = parent.lexicalLevel + (creatingSymbol != null ? 1 : 0);
+				offset = creatingSymbol != null ? 0 : parent.offset;
+			}
+			this.symbols = new HashMap<>();
+			this.creatingSymbol = creatingSymbol;
 		}
 
 		public boolean containsSymbol(String name) {
@@ -34,9 +48,19 @@ public class SymbolTable {
 
 		public Symbol getSymbol(String name) {
 			if(containsSymbol(name)) {
-				return symbols.get(name);
+				return symbols.get(name).getKey();
 			} else if (parent != null) {
 				return parent.getSymbol(name);
+			} else {
+				return null;
+			}
+		}
+
+		public Pair<Integer, Integer> getSymbolLocation(String name) {
+			if(containsSymbol(name)) {
+				return new Pair<>(lexicalLevel, symbols.get(name).getValue());
+			} else if (parent != null) {
+				return parent.getSymbolLocation(name);
 			} else {
 				return null;
 			}
@@ -46,13 +70,14 @@ public class SymbolTable {
 			if(symbols.containsKey(name)) {
 				throw new RuntimeException("Symbol already exists in scope!");
 			}
-			symbols.put(name, sym);
+			symbols.put(name, new Pair<>(sym, offset));
+			offset += sym.getDataSize();
 		}
 	}
 
 	public SymbolScope globalScope;
 
-	public List<SymbolScope> allScopes;
+	public HashMap<AST, SymbolScope> allScopes;
 	
 	/** Symbol Table  constructor
          *  Create and initialize a symbol table 
@@ -72,8 +97,8 @@ public class SymbolTable {
 	    *	Any additional symbol table initialization
 	    *  GOES HERE                                	
 	    */
-	   this.globalScope = new SymbolScope(null);
-	   this.allScopes = new ArrayList<>();
+	   this.globalScope = new SymbolScope(null, null);
+	   this.allScopes = new HashMap<>();
 	}
 
 	/**  Finalize - called once by Semantics at the end of compilation
@@ -85,8 +110,6 @@ public class SymbolTable {
 	   *  symbol table  class GOES HERE.
 	   *  
 	   */
-	  this.globalScope = null;
-	  this.allScopes = null;
 	}
 	
 
@@ -96,10 +119,10 @@ public class SymbolTable {
 	 *  GO HERE.				
 	 */
 
-	public SymbolScope createNewScope(SymbolScope currentScope) {
+	public SymbolScope createNewScope(SymbolScope currentScope, Symbol creatingSymbol, AST creator) {
 		assert currentScope != null;
-		SymbolScope newScope = new SymbolScope(currentScope);
-		this.allScopes.add(newScope);
+		SymbolScope newScope = new SymbolScope(currentScope, creatingSymbol);
+		this.allScopes.put(creator, newScope);
 		return newScope;
 	}
 }

@@ -3,7 +3,10 @@ package compiler488.ast.stmt;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.decl.Declaration;
+import compiler488.ast.decl.RoutineDecl;
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
+import compiler488.symbol.SymbolTable;
 
 /**
  * Represents the declarations and statements of a scope construct.
@@ -82,5 +85,32 @@ public class Scope extends Stmt {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		SymbolTable.SymbolScope s = g.getSymbols().allScopes.get(this);
+		g.enterScope(s);
+
+		performMainCodeGeneration(g);
+
+		g.exitScope(s);
+	}
+
+	public void performMainCodeGeneration(CodeGen g) {
+		for(Declaration decl : declarations) {
+			if(decl instanceof RoutineDecl){
+				g.getRoutinesToGenerate().add(decl);
+			}
+		}
+
+		for(Stmt stmt : statements) {
+			stmt.performCodeGeneration(g);
+
+			// If we ever find a statement that will definitely terminate, we can stop here, no need to generate the remaining code.
+			if(stmt.hasReturn()) {
+				return;
+			}
+		}
 	}
 }

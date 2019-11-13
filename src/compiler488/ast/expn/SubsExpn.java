@@ -1,8 +1,12 @@
 package compiler488.ast.expn;
 
+import compiler488.Pair;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.Readable;
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
+import compiler488.symbol.Symbol;
 
 /**
  * References to an array element variable
@@ -73,5 +77,40 @@ public class SubsExpn extends Expn implements Readable {
 		}
 		result &= s.semanticAction(27, this);
 		return result;
+	}
+
+	@Override
+	public void generateCodeForAccessor(CodeGen g) {
+		Symbol sym =g.getCurrentScope().getSymbol(variable);
+		Pair<Integer, Integer> p = g.getCurrentScope().getSymbolLocation(variable);
+		g.addInstruction(Machine.ADDR);
+		g.addInstruction(p.getKey());
+		g.addInstruction(p.getValue());
+		subscript1.performCodeGeneration(g);
+		if(sym.bounds.minX != 0) {
+			g.addInstruction(Machine.PUSH);
+			g.addInstruction(sym.bounds.minX);
+			g.addInstruction(Machine.SUB);
+		}
+		if(subscript2 != null) {
+			g.addInstruction(Machine.PUSH);
+			// Stride of dimension 2
+			g.addInstruction(sym.bounds.maxY - sym.bounds.minY + 1);
+			g.addInstruction(Machine.MUL);
+			subscript2.performCodeGeneration(g);
+			if (sym.bounds.minY != 0) {
+				g.addInstruction(Machine.PUSH);
+				g.addInstruction(sym.bounds.minY);
+				g.addInstruction(Machine.SUB);
+			}
+			g.addInstruction(Machine.ADD);
+		}
+		g.addInstruction(Machine.ADD);
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen g) {
+		generateCodeForAccessor(g);
+		g.addInstruction(Machine.LOAD);
 	}
 }

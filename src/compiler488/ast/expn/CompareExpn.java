@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -33,4 +35,34 @@ public class CompareExpn extends BinaryExpn {
         return result;
     }
 
+    @Override
+    public void performCodeGeneration(CodeGen g) {
+        if (opSymbol == OP_LESS) {
+            left.performCodeGeneration(g);
+            right.performCodeGeneration(g);
+            g.addInstruction(Machine.LT);
+        } else if(opSymbol == OP_GREATER_EQUAL) {
+            g.addInstruction(Machine.PUSH);
+            g.addInstruction(1);
+            left.performCodeGeneration(g);
+            right.performCodeGeneration(g);
+            g.addInstruction(Machine.LT);
+            g.addInstruction(Machine.SUB);
+        } else if(opSymbol == OP_GREATER) {
+            left.performCodeGeneration(g);
+            right.performCodeGeneration(g);
+            g.addInstruction(Machine.SWAP);
+            g.addInstruction(Machine.LT);
+        } else if(opSymbol == OP_LESS_EQUAL) {
+            g.addInstruction(Machine.PUSH);
+            g.addInstruction(1);
+            left.performCodeGeneration(g);
+            right.performCodeGeneration(g);
+            g.addInstruction(Machine.SWAP);
+            g.addInstruction(Machine.LT);
+            g.addInstruction(Machine.SUB);
+        } else {
+            throw new RuntimeException("Invalid comparison expression");
+        }
+    }
 }

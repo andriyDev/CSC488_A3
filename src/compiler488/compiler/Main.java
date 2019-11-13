@@ -137,6 +137,8 @@ public class Main {
 	/** index of compiler source file in argv */
 	private static int sourceFileIndex = -1;
 
+	private static SymbolTable semanticAnalysisTable;
+
 	/**
 	 * process command line arguments to Main program. <BR>
 	 * Will accept any name as a file argument, if the name is invalid the error
@@ -397,7 +399,10 @@ public class Main {
 			//
 			// Semantics.doIt( programAST );
 			Semantics analyzer = new Semantics();
-			analyzer.analyze(programAST);
+			if(!analyzer.analyze(programAST)) {
+				throw new RuntimeException("Syntax Error!");
+			}
+			semanticAnalysisTable = analyzer.getSymbols();
 		} catch (Exception e) {
 			System.err.println("Exception during Semantic Analysis");
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -430,6 +435,11 @@ public class Main {
 			// or
 			//
 			// codeGen.doIt(programAST);
+			CodeGen generator = new CodeGen(machine, semanticAnalysisTable);
+			if(!generator.generate(programAST)) {
+				throw new RuntimeException("Code Generation Error!");
+			}
+			semanticAnalysisTable = null;
 		} catch (Exception e) {
 			System.err.println("Exception during Code Generation");
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());

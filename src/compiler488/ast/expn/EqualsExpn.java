@@ -1,6 +1,8 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
+import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
 /**
@@ -26,5 +28,20 @@ public class EqualsExpn extends BinaryExpn {
         result &= s.semanticAction(32, this);
         result &= s.semanticAction(20, this);
         return result;
+    }
+
+    @Override
+    public void performCodeGeneration(CodeGen g) {
+        if(opSymbol == OP_NOT_EQUAL) {
+            g.addInstruction(Machine.PUSH);
+            g.addInstruction(1);
+        }
+        left.performCodeGeneration(g);
+        right.performCodeGeneration(g);
+        g.addInstruction(Machine.EQ);
+
+        if(opSymbol == OP_NOT_EQUAL) {
+            g.addInstruction(Machine.SUB);
+        }
     }
 }

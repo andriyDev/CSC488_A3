@@ -1,5 +1,6 @@
 package compiler488.ast;
 
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
 import compiler488.Pair;
 
@@ -51,4 +52,5 @@ public abstract class BaseAST implements AST {
 	}
 
 	public boolean performSemanticAnalysis(Semantics s) { return true; }
+	public void performCodeGeneration(CodeGen g) {  }
 }
