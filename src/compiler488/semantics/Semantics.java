@@ -224,6 +224,7 @@ public class Semantics {
 					return true;
 				}
 			} else {
+				System.err.println("Expression not assignable! " + positionString(target));
 				return false;
 			}
 		}
@@ -434,6 +435,7 @@ public class Semantics {
 				return false;
 			} else if(sym.resultantType == null) {
 				System.err.println("Symbol is actually a procedure, not a function! " + positionString(target));
+				return false;
 			} else {
 				expns.put(expn, sym.resultantType);
 				return true;
@@ -726,6 +728,7 @@ public class Semantics {
 			callArg++;
 			return true;
 		}
+		System.err.println("Unknown action number: " + actionNumber + ". " + positionString(target));
 		return false;
 	}
 

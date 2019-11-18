@@ -96,6 +96,7 @@ public class ExitStmt extends Stmt {
 			g.addInstruction(Machine.PUSH);
 			addressAfterExit = g.getPosition();
 			g.addInstruction(0); // Temporary slot
+			g.addInstruction(Machine.BF);
 		}
 		int size = g.getLoopExitSize(level);
 		if(size != 0) {

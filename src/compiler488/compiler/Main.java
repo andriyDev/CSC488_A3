@@ -400,7 +400,7 @@ public class Main {
 			// Semantics.doIt( programAST );
 			Semantics analyzer = new Semantics();
 			if(!analyzer.analyze(programAST)) {
-				throw new RuntimeException("Syntax Error!");
+				throw new RuntimeException("Semantic Error!");
 			}
 			semanticAnalysisTable = analyzer.getSymbols();
 		} catch (Exception e) {

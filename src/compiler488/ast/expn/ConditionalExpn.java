@@ -63,10 +63,10 @@ public class ConditionalExpn extends Expn {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
+		condition.performCodeGeneration(g);
 		g.addInstruction(Machine.PUSH);
 		int addrOfFalseExprFillIn = g.getPosition();
 		g.addInstruction(0); // Temporary to be filled in later
-		condition.performCodeGeneration(g);
 		g.addInstruction(Machine.BF);
 		trueValue.performCodeGeneration(g);
 		g.addInstruction(Machine.PUSH);

@@ -45,9 +45,11 @@ public class FunctionCallExpn extends Expn {
 	public boolean performSemanticAnalysis(Semantics s) {
 		boolean result = true;
 		if(arguments.size() > 0) {
-			result = s.semanticAction(44, this);
 			for(Expn ex : arguments) {
 				result &= ex.performSemanticAnalysis(s);
+			}
+			result &= s.semanticAction(44, this);
+			for(Expn ex : arguments) {
 				result &= s.semanticAction(36, ex);
 				result &= s.semanticAction(45, this);
 			}

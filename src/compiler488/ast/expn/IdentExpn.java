@@ -62,7 +62,38 @@ public class IdentExpn extends Expn implements Readable {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
-		generateCodeForAccessor(g);
-		g.addInstruction(Machine.LOAD);
+		if(g.getCurrentScope().getSymbol(ident).type == Symbol.SymbolType.Routine) {
+			int ll = g.getCurrentLexicalLevel();
+			// Creating the activation record
+			g.addInstruction(Machine.ADDR);
+			g.addInstruction(ll);
+			g.addInstruction(0);
+			g.addInstruction(Machine.PUSH);
+			int addressAfterBranch = g.getPosition();
+			g.addInstruction(0); // Space to put the address after branch
+			g.addInstruction(Machine.PUSH);
+			g.addInstruction(0); // Space for static link
+			g.addInstruction(Machine.PUSH);
+			int routineAddress = g.getRoutineAddress(g.getCurrentScope().getSymbol(ident), g.getPosition());
+			g.addInstruction(routineAddress); // Note that this routine address may be -1, but it will be overwritten once the routine is generated.
+			g.addInstruction(Machine.BR); // Jump to the function
+			g.setInstruction(addressAfterBranch, g.getPosition());
+			// We need to swap for function calls
+			g.addInstruction(Machine.SWAP);
+
+			// Display Management Strategy
+			for(int i = ll; i >= 0; i--) {
+				if(i != ll) {
+					g.addInstruction(Machine.ADDR);
+					g.addInstruction(i + 1);
+					g.addInstruction(-1);
+				}
+				g.addInstruction(Machine.SETD);
+				g.addInstruction(i);
+			}
+		} else {
+			generateCodeForAccessor(g);
+			g.addInstruction(Machine.LOAD);
+		}
 	}
 }

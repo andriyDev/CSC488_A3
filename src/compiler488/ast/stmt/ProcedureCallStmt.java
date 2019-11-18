@@ -56,11 +56,13 @@ public class ProcedureCallStmt extends Stmt {
 
 	@Override
 	public boolean performSemanticAnalysis(Semantics s) {
-		boolean result;
+		boolean result = true;
 		if(arguments.size() > 0) {
-			result = s.semanticAction(44, this);
 			for(Expn argument : arguments) {
 				result &= argument.performSemanticAnalysis(s);
+			}
+			result &= s.semanticAction(44, this);
+			for(Expn argument : arguments) {
 				// These are reordered so as not to mess up the argument count
 				result &= s.semanticAction(36, argument);
 				result &= s.semanticAction(45, this);
