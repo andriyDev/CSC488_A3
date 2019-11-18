@@ -301,8 +301,8 @@
 
     Generated code:
 
-    PUSH <address of false expression>      % 2.g.1 - for BF later
     PUSH 1                                  % 2.g.1 - evaluate condition
+    PUSH <address of false expression>      % 2.g.1
     BF                                      % 2.g.1
     PUSH 7                                  % 2.g.1 - evaluate true expression
     PUSH <address after false expression>   % 2.g.1 - skip over false expression
@@ -441,7 +441,7 @@
 
     Generated code:
 
-    ADDR 1 0                    % 3.e.1
+    ADDR 0 0                    % 3.e.1
     PUSH <address after branch> % 3.e.1
     PUSH 0                      % 3.e.1 - make space for the static link
     PUSH 4                      % 3.e.1 - evaluate parameter 1
