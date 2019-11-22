@@ -44,6 +44,7 @@ public class ReadStmt extends Stmt {
 		for(Readable element : inputs) {
 			element.generateCodeForAccessor(g);
 			g.addInstruction(Machine.READI);
+			g.addInstruction(Machine.STORE);
 		}
 	}
 
