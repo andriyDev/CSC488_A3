@@ -1,0 +1,5 @@
+templates.txt -> the description of all code generation templates
+A4-1.m -> the assembly-esque code for A4-1.488
+A4-2.m -> the assembly-esque code for A4-2.488
+A4-3.m -> the assembly-esque code for A4-3.488
+division_of_work.txt -> the description of the division of labour for this assignment
