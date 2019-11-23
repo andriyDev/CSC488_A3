@@ -15,3 +15,4 @@ for filename in tests/*.488; do
     echo "EndMSP: " $endmsp
     echo "$RESULT"
 done
+rm .tmp
