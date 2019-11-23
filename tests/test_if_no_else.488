@@ -1,0 +1,8 @@
+{
+    var flag : boolean
+    flag := false
+    if false then write "Wrong!", newline
+    if true then flag := true
+    
+    if not flag then write "Error", newline
+}

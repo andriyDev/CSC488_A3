@@ -1,0 +1,8 @@
+{
+    var sum : integer
+    
+    if false then write "Wrong!", newline else sum := sum + 1
+    if true then sum := sum + 1 else write "Wrong!", newline
+    
+    if sum not = 2 then write "Error", newline
+}

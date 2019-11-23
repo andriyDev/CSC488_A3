@@ -1,0 +1,4 @@
+{
+    if 7 + 3 - 2 not = 8 then write "Error", newline
+    if 7 * 3 / 2 not = 10 then write "Error", newline
+}

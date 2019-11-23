@@ -1,0 +1,7 @@
+{
+    var x : integer
+    while x < 10 do {
+        x := x + 1
+    }
+    if x not = 10 then write "Error", newline
+}

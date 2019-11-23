@@ -1,0 +1,33 @@
+{
+    var i : integer
+    var flag : boolean
+
+    while true do {
+        var x, y[3] : integer
+        x := 1
+        exit
+        write "Error", newline
+    }
+
+    flag := false
+    while true do {
+        var x[10] : integer
+        while true do {
+            var y[15] : integer
+            while true do {
+                var z : integer
+                exit 2
+            }
+            write "Error", newline
+        }
+        flag := true
+        exit
+    }
+    if not flag then write "Error", newline
+
+    while true do {
+        exit when i = 10
+        i := i + 1
+    }
+    if i not = 10 then write "Error", newline
+}

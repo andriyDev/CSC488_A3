@@ -1,0 +1,11 @@
+{
+    var x, y[10] : integer
+    {
+        var z : integer
+        z := 7
+        y[2] := 3
+        z := y[2] * z
+        if z not = 21 then write "Error", newline
+    }
+    if y[2] not = 3 then write "Error", newline
+}

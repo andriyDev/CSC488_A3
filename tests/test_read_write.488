@@ -1,0 +1,7 @@
+{
+    var x, y[-10..20] : integer
+    read x
+    if x not = 7 then write "Error", newline
+    read y[10]
+    if y[10] not = 12 or y[0] not = 0 then write "Error", newline
+}

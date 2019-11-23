@@ -1,0 +1,12 @@
+{
+    function f : integer {
+        return with 17
+    }
+    function g(a : integer, b : integer) : integer {
+        return with a + a * b
+    }
+
+    if f not = 17 then write "Error", newline
+    if g(3,7) not = 24 then write "Error", newline
+    if g(10,5) not = 60 then write "Error", newline
+}

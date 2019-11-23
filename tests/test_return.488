@@ -1,0 +1,14 @@
+{
+    function f : integer {
+        return with 17
+        write "Wrong!", newline
+    }
+
+    procedure p {
+        return
+        write "Wrong!", newline
+    }
+
+    if f not = 17 then write "Error", newline
+    p
+}

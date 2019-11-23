@@ -1,0 +1,7 @@
+{
+    var x, iters : integer
+    x := 30
+    repeat x := x - 1 iters := iters + 1 until x <= 20
+    
+    if iters not = 10 or x not = 20 then write "Error", newline
+}

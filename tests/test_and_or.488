@@ -1,0 +1,4 @@
+{
+    if ((true and true or false and true) and false) then write "Error", newline
+    if not ((true and true or false and true) and true) then write "Error", newline
+}

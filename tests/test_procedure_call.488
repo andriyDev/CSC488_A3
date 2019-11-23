@@ -1,0 +1,16 @@
+{
+    var sum : integer
+    procedure p {
+        sum := sum + 1
+    }
+
+    procedure q(a : integer, b : integer) {
+        sum := sum + a * b
+    }
+
+    p
+    q(3, 4)
+    q(7, 1)
+
+    if sum not = 20 then write "Error", newline
+}
