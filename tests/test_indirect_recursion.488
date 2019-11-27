@@ -1,0 +1,12 @@
+{
+    function f(n : integer) : integer {
+        function g(n : integer) : integer {
+            return with f(n-1)
+        }
+        if n <= 1 then return with 1 else return with n * g(n)
+    }
+
+    if f(2) not = 2 then write "ERROR", f(2), newline
+    if f(5) not = 120 then write "ERROR", f(5), newline
+    if f(6) not = 720 then write "ERROR", f(6), newline
+}
