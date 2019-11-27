@@ -8,7 +8,7 @@ repeat() {
 }
 
 MAXNAMELEN=0
-for filename in tests/passing/*.488 tests/failing/*.488; do
+for filename in testing/pass/*.488 testing/fail/*.488; do
     length=${#filename}
     if [ $MAXNAMELEN \< $length ]
     then
@@ -18,7 +18,7 @@ done
 MAXNAMELEN=$((MAXNAMELEN + 10))
 
 echo -e "===== Passing Tests =====\n"
-for filename in tests/pass/*.488; do
+for filename in testing/pass/*.488; do
     msg="Test \"$filename\""
     echo -n -e $msg
     length=${#msg}
@@ -40,7 +40,7 @@ done
 
 echo -e "\n===== Failing Tests =====\n"
 
-for filename in tests/fail/*.488; do
+for filename in testing/fail/*.488; do
     msg="Test \"$filename\""
     echo -n -e $msg
     length=${#msg}

@@ -1,4 +1,4 @@
-pass:
+pass (ALL NEW):
     test_and_or.488                             : Logical AND and OR
     test_arithmetic.488                         : Basic arithmetic operators
     test_array_access.488                       : Both reading and writing to array elements
@@ -17,7 +17,7 @@ pass:
     test_return.488                             : Returning from a function/procedure
     test_while.488                              : A while statement that loops 10 times
 
-fail:
+fail (ALL FROM A3):
     test_add_bool.488                           : Adding boolean expressions together
     test_and_int.488                            : "And"ing integer expressions together
     test_arr_var_not_int.488                    : Assigning a boolean to an integer array
