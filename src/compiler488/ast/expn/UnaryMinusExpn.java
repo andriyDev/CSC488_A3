@@ -1,6 +1,7 @@
 package compiler488.ast.expn;
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Represents negation of an integer expression
@@ -18,4 +19,9 @@ public class UnaryMinusExpn extends UnaryExpn {
         result &= s.semanticAction(21, this);
         return result;
     }
+
+    @Override
+	public void performCodeGeneration(CodeGen c) {
+		c.generateCodeForExpn(60, this);
+	}
 }

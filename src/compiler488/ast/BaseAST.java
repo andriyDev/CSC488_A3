@@ -2,6 +2,7 @@ package compiler488.ast;
 
 import compiler488.semantics.Semantics;
 import compiler488.Pair;
+import compiler488.codegen.CodeGen;
 
 /**
  * Base class implementation for the AST hierarchy.
@@ -51,4 +52,5 @@ public abstract class BaseAST implements AST {
 	}
 
 	public boolean performSemanticAnalysis(Semantics s) { return true; }
+	public void performCodeGeneration(CodeGen c) {return; }
 }

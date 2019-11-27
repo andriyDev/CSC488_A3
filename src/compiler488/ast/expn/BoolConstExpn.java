@@ -1,6 +1,7 @@
 package compiler488.ast.expn;
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Boolean literal constants.
@@ -27,5 +28,13 @@ public class BoolConstExpn extends ConstExpn {
 	@Override
 	public boolean performSemanticAnalysis(Semantics s) {
 		return s.semanticAction(20, this);
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		if (getValue() == true)
+			c.generateCodeForExpn(79, this);
+		else
+			c.generateCodeForExpn(78, this);
 	}
 }

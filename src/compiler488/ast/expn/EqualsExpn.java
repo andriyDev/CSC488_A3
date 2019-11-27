@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Place holder for all binary expression where both operands could be either
@@ -27,4 +28,21 @@ public class EqualsExpn extends BinaryExpn {
         result &= s.semanticAction(20, this);
         return result;
     }
+
+    @Override
+	public void performCodeGeneration(CodeGen c) {
+		left.performCodeGeneration(c);
+        right.performCodeGeneration(c);
+
+        if (opSymbol == OP_EQUAL) {
+            c.generateCodeForExpn(69, this);
+        }
+        else if (opSymbol == OP_NOT_EQUAL) {
+            c.generateCodeForExpn(70, this);
+        }
+        else {
+            // TODO ???
+        }
+	}
+
 }

@@ -2,6 +2,7 @@ package compiler488.ast;
 
 import compiler488.semantics.Semantics;
 import compiler488.Pair;
+import compiler488.codegen.CodeGen;
 
 import java.util.LinkedList;
 
@@ -74,6 +75,11 @@ public class ASTList<E extends AST> extends LinkedList<E> implements AST {
 	@Override
 	public boolean performSemanticAnalysis(Semantics s) {
 		return true;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		return;
 	}
 
 	public Pair<Integer, Integer> getPosition() {

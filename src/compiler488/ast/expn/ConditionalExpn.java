@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /** Represents a conditional expression (i.e., x>0?3:4). */
 public class ConditionalExpn extends Expn {
@@ -57,5 +58,10 @@ public class ConditionalExpn extends Expn {
 		result &= s.semanticAction(33, this);
 		result &= s.semanticAction(24, this);
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		// TODO
 	}
 }

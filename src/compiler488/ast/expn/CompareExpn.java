@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Place holder for all ordered comparisons expression where both operands must
@@ -33,4 +34,26 @@ public class CompareExpn extends BinaryExpn {
         return result;
     }
 
+    @Override
+    public void performCodeGeneration(CodeGen c) {
+        left.performCodeGeneration(c);
+        right.performCodeGeneration(c);
+        if (opSymbol == OP_LESS) {
+            c.generateCodeForExpn(71, this);
+        }
+        else if (opSymbol == OP_LESS_EQUAL) {
+            c.generateCodeForExpn(72, this);
+        }
+        else if (opSymbol == OP_GREATER) {
+            c.generateCodeForExpn(73, this);
+        }
+        else if (opSymbol == OP_GREATER_EQUAL) {
+            c.generateCodeForExpn(74, this);
+        }
+        else {
+            // TODO
+
+        }
+        
+    }
 }

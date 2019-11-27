@@ -3,6 +3,7 @@ package compiler488.ast.expn;
 import compiler488.ast.Readable;
 import compiler488.semantics.Semantics;
 import compiler488.symbol.Symbol;
+import compiler488.codegen.CodeGen;
 
 /**
  * References to a scalar variable or function call without parameters.
@@ -47,5 +48,10 @@ public class IdentExpn extends Expn implements Readable {
 			result = s.semanticAction(57, this);
 		}
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		// TODO
 	}
 }

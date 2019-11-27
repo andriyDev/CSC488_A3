@@ -3,6 +3,7 @@ package compiler488.ast.expn;
 import compiler488.ast.PrettyPrinter;
 import compiler488.ast.Readable;
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * References to an array element variable
@@ -74,4 +75,9 @@ public class SubsExpn extends Expn implements Readable {
 		result &= s.semanticAction(27, this);
 		return result;
 	}
+
+	@Override
+    public void performCodeGeneration(CodeGen c) {
+        // TODO
+    }
 }

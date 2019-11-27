@@ -1,7 +1,7 @@
 package compiler488.ast.expn;
 
 import compiler488.ast.Printable;
-
+import compiler488.codegen.CodeGen;
 /**
  * Represents a literal text constant.
  */
@@ -25,5 +25,10 @@ public class TextConstExpn extends ConstExpn implements Printable {
 	@Override
 	public String toString() {
 		return "\"" + value + "\"";
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		c.generateCodeForExpn(52, this);
 	}
 }

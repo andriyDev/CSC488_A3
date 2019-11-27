@@ -3,6 +3,7 @@ package compiler488.ast.expn;
 import compiler488.ast.ASTList;
 import compiler488.ast.PrettyPrinter;
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Represents a function call with arguments.
@@ -55,5 +56,10 @@ public class FunctionCallExpn extends Expn {
 		}
 		result &= s.semanticAction(28, this);
 		return result;
+	}
+
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		// TODO
 	}
 }

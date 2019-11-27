@@ -2,6 +2,7 @@ package compiler488.ast;
 
 import compiler488.semantics.Semantics;
 import compiler488.Pair;
+import compiler488.codegen.CodeGen;
 
 /**
  * Common interface for all Abstract Syntax Tree nodes.
@@ -21,6 +22,7 @@ public interface AST extends PrettyPrintable {
 	public void prettyPrint(PrettyPrinter p);
 
 	public boolean performSemanticAnalysis(Semantics s);
+	public void performCodeGeneration(CodeGen c);
 
 	public Pair<Integer, Integer> getPosition();
 }

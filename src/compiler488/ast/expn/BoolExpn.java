@@ -1,6 +1,7 @@
 package compiler488.ast.expn;
 
 
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
 
 /**
@@ -28,4 +29,19 @@ public class BoolExpn extends BinaryExpn {
         result &= s.semanticAction(20, this);
         return result;
     }
+
+    @Override
+	public void performCodeGeneration(CodeGen c) {
+        left.performCodeGeneration(c);
+        right.performCodeGeneration(c);
+        if (opSymbol == OP_OR) {
+            c.generateCodeForExpn(67, this);
+        }
+        else if (opSymbol == OP_AND) {
+            c.generateCodeForExpn(66, this);
+        }
+        else {
+            // TODO ???
+        }
+	}
 }

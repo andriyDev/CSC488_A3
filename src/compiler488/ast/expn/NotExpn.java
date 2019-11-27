@@ -2,6 +2,7 @@ package compiler488.ast.expn;
 
 
 import compiler488.semantics.Semantics;
+import compiler488.codegen.CodeGen;
 
 /**
  * Represents the boolean negation of an expression.
@@ -18,5 +19,11 @@ public class NotExpn extends UnaryExpn {
         result &= s.semanticAction(30, getOperand());
         result &= s.semanticAction(20, this);
         return result;
+    }
+
+    @Override
+    public void performCodeGeneration(CodeGen c) {
+        getOperand().performCodeGeneration(c);
+        c.generateCodeForExpn(65, this);
     }
 }

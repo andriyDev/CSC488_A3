@@ -397,7 +397,11 @@ public class Main {
 			//
 			// Semantics.doIt( programAST );
 			Semantics analyzer = new Semantics();
-			analyzer.analyze(programAST);
+			boolean result = analyzer.analyze(programAST);
+			if (result == false) {
+				errorOccurred = true;
+			}
+			
 		} catch (Exception e) {
 			System.err.println("Exception during Semantic Analysis");
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -430,6 +434,9 @@ public class Main {
 			// or
 			//
 			// codeGen.doIt(programAST);
+			CodeGen c = new CodeGen(machine);
+			c.generate(programAST);
+			
 		} catch (Exception e) {
 			System.err.println("Exception during Code Generation");
 			System.err.println(e.getClass().getName() + ": " + e.getMessage());
@@ -539,7 +546,7 @@ public class Main {
 
 		/* Do semantic analysis on the program */
 		semanticAnalysis(programAST);
-
+		
 		if (errorOccurred) {
 			System.out.println("Processing Terminated due to errors during semantic analysis");
 			return;

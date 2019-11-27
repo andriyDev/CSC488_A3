@@ -1,5 +1,6 @@
 package compiler488.ast.expn;
 
+import compiler488.codegen.CodeGen;
 import compiler488.semantics.Semantics;
 
 /**
@@ -29,5 +30,10 @@ public class IntConstExpn extends ConstExpn {
 	@Override
 	public boolean performSemanticAnalysis(Semantics s) {
 		return s.semanticAction(21, this);
+	}
+	
+	@Override
+	public void performCodeGeneration(CodeGen c) {
+		c.generateCodeForExpn(80, this);
 	}
 }
