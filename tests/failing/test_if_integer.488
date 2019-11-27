@@ -1,0 +1,4 @@
+{
+    var x : integer
+    if x then write "Hello"
+}

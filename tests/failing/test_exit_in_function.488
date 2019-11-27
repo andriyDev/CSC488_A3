@@ -1,0 +1,7 @@
+{
+    function f : integer {
+        exit
+        return with 0
+    }
+    write 0
+}

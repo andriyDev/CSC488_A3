@@ -1,0 +1,10 @@
+{
+    procedure proc_with_multi_param (val_1 : boolean, val_2 : integer) 
+	{
+		write 1
+
+        return
+	}
+
+    proc_with_multi_param(10, true)
+}
