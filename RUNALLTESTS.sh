@@ -18,7 +18,7 @@ done
 MAXNAMELEN=$((MAXNAMELEN + 10))
 
 echo -e "===== Passing Tests =====\n"
-for filename in tests/passing/*.488; do
+for filename in tests/*.488; do
     msg="Test \"$filename\""
     echo -n -e $msg
     length=${#msg}
@@ -38,6 +38,8 @@ for filename in tests/passing/*.488; do
     fi
 done
 
+echo -e "\n===== Failing Tests =====\n"
+
 for filename in tests/failing/*.488; do
     msg="Test \"$filename\""
     echo -n -e $msg
@@ -45,6 +47,13 @@ for filename in tests/failing/*.488; do
     repeat $((MAXNAMELEN - length))
 
     RESULT=$(echo 7 12 | java -jar dist/compiler488.jar $filename 2> .tmp)
-    echo $?
+    ERROR=$(<.tmp)
+    if [ -n "$ERROR" ]
+    then
+        echo -n -e "PASSED\n"
+        echo "$ERROR"
+    else
+        echo -n -e "FAILED\n"
+    fi
 done
 rm .tmp
