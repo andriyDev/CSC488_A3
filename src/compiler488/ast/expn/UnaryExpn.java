@@ -48,4 +48,9 @@ public abstract class UnaryExpn extends Expn {
 		p.print(")");
 
 	}
+
+	@Override
+	public boolean isConstant() {
+		return operand.isConstant();
+	}
 }

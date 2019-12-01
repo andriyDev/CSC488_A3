@@ -96,4 +96,9 @@ public class FunctionCallExpn extends Expn {
 			g.addInstruction(i);
 		}
 	}
+
+	@Override
+	public boolean isConstant() {
+		return false;
+	}
 }

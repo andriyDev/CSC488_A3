@@ -65,4 +65,22 @@ public class CompareExpn extends BinaryExpn {
             throw new RuntimeException("Invalid comparison expression");
         }
     }
+
+    @Override
+    public short computeConstant() {
+        short leftValue = left.getCachedConstantValue();
+        short rightValue = right.getCachedConstantValue();
+        switch (opSymbol) {
+            case OP_LESS:
+                return (short)(leftValue < rightValue ? 1 : 0);
+            case OP_GREATER:
+                return (short)(leftValue > rightValue ? 1 : 0);
+            case OP_LESS_EQUAL:
+                return (short)(leftValue <= rightValue ? 1 : 0);
+            case OP_GREATER_EQUAL:
+                return (short)(leftValue >= rightValue ? 1 : 0);
+            default:
+                throw new RuntimeException("Invalid comparison expression");
+        }
+    }
 }

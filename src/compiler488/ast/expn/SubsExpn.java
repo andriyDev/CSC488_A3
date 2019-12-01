@@ -113,4 +113,9 @@ public class SubsExpn extends Expn implements Readable {
 		generateCodeForAccessor(g);
 		g.addInstruction(Machine.LOAD);
 	}
+
+	@Override
+	public boolean isConstant() {
+		return false;
+	}
 }

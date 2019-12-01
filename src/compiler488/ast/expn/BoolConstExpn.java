@@ -36,4 +36,9 @@ public class BoolConstExpn extends ConstExpn {
 		g.addInstruction(Machine.PUSH);
 		g.addInstruction(value ? 1 : 0);
 	}
+
+	@Override
+	public short computeConstant() {
+		return (short)(value ? 1 : 0);
+	}
 }

@@ -15,4 +15,9 @@ public class SkipConstExpn extends ConstExpn implements Printable {
 	public String toString() {
 		return "newline";
 	}
+
+	@Override
+	public boolean isConstant() {
+		return false;
+	}
 }

@@ -49,4 +49,18 @@ public class BoolExpn extends BinaryExpn {
                 throw new RuntimeException("Invalid arithmetic expression!");
         }
     }
+
+    @Override
+    public short computeConstant() {
+        boolean leftValue = left.getCachedConstantValue() == 1;
+        boolean rightValue = right.getCachedConstantValue() == 1;
+        switch (opSymbol) {
+            case OP_AND:
+                return (short)(leftValue && rightValue ? 1 : 0);
+            case OP_OR:
+                return (short)(leftValue || rightValue ? 1 : 0);
+            default:
+                throw new RuntimeException("Invalid arithmetic expression!");
+        }
+    }
 }

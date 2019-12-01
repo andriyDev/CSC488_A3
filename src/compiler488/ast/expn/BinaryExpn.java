@@ -50,4 +50,9 @@ public abstract class BinaryExpn extends Expn {
 		right.prettyPrint(p);
 		p.print(")");
 	}
+
+	@Override
+	public boolean isConstant() {
+		return left.getCachedIsConstant() && right.getCachedIsConstant();
+	}
 }

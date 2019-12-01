@@ -77,4 +77,27 @@ public class ConditionalExpn extends Expn {
 		falseValue.performCodeGeneration(g);
 		g.setInstruction(addrOfAfterFalseExprFillIn, g.getPosition()); // Fill in the address
 	}
+
+	@Override
+	public boolean isConstant() {
+		if(!condition.getCachedIsConstant()) {
+			return false;
+		}
+		boolean val = condition.getCachedConstantValue() == 1;
+		if(val) {
+			return trueValue.getCachedIsConstant();
+		} else {
+			return falseValue.getCachedIsConstant();
+		}
+	}
+
+	@Override
+	public short computeConstant() {
+		boolean val = condition.getCachedConstantValue() == 1;
+		if(val) {
+			return trueValue.getCachedConstantValue();
+		} else {
+			return falseValue.getCachedConstantValue();
+		}
+	}
 }

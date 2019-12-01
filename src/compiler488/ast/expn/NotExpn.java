@@ -29,4 +29,9 @@ public class NotExpn extends UnaryExpn {
         getOperand().performCodeGeneration(g);
         g.addInstruction(Machine.SUB);
     }
+
+    @Override
+    public short computeConstant() {
+        return (short)(1 - getOperand().getCachedConstantValue());
+    }
 }

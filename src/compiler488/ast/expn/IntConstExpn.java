@@ -38,4 +38,9 @@ public class IntConstExpn extends ConstExpn {
 		g.addInstruction(Machine.PUSH);
 		g.addInstruction(value);
 	}
+
+	@Override
+	public short computeConstant() {
+		return value.shortValue();
+	}
 }

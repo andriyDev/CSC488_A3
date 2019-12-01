@@ -44,4 +44,15 @@ public class EqualsExpn extends BinaryExpn {
             g.addInstruction(Machine.SUB);
         }
     }
+
+    @Override
+    public short computeConstant() {
+        short leftValue = left.getCachedConstantValue();
+        short rightValue = right.getCachedConstantValue();
+        if(opSymbol == OP_NOT_EQUAL) {
+            return (short)(leftValue != rightValue ? 1 : 0);
+        } else {
+            return (short)(leftValue == rightValue ? 1 : 0);
+        }
+    }
 }

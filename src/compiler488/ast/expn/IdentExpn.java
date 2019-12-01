@@ -96,4 +96,9 @@ public class IdentExpn extends Expn implements Readable {
 			g.addInstruction(Machine.LOAD);
 		}
 	}
+
+	@Override
+	public boolean isConstant() {
+		return false;
+	}
 }

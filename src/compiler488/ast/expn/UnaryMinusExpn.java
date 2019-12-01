@@ -26,4 +26,9 @@ public class UnaryMinusExpn extends UnaryExpn {
         getOperand().performCodeGeneration(g);
         g.addInstruction(Machine.NEG);
     }
+
+    @Override
+    public short computeConstant() {
+        return (short)(-getOperand().getCachedConstantValue());
+    }
 }

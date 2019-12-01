@@ -26,4 +26,9 @@ public class TextConstExpn extends ConstExpn implements Printable {
 	public String toString() {
 		return "\"" + value + "\"";
 	}
+
+	@Override
+	public boolean isConstant() {
+		return false;
+	}
 }

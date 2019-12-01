@@ -56,4 +56,26 @@ public class ArithExpn extends BinaryExpn {
                 throw new RuntimeException("Invalid arithmetic expression!");
         }
     }
+
+    @Override
+    public short computeConstant() {
+        short leftValue = left.getCachedConstantValue();
+        short rightValue = right.getCachedConstantValue();
+        switch (opSymbol) {
+            case OP_PLUS:
+                return (short)(leftValue + rightValue);
+            case OP_MINUS:
+                return (short)(leftValue - rightValue);
+            case OP_TIMES:
+                return (short)(leftValue * rightValue);
+            case OP_DIVIDE:
+                if(rightValue == 0) {
+                    throw new RuntimeException("Division by zero!");
+                } else {
+                    return (short)(leftValue / rightValue);
+                }
+            default:
+                throw new RuntimeException("Invalid arithmetic expression!");
+        }
+    }
 }
