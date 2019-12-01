@@ -1,0 +1,6 @@
+{
+    var x : integer
+    x := 20
+
+    if x not = (15 * 3 - 5) / 2 then write "Wrong", newline
+}

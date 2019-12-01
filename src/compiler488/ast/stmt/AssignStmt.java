@@ -56,7 +56,7 @@ public class AssignStmt extends Stmt {
 		} else {
 			throw new RuntimeException("lval is not assignable!");
 		}
-		rval.performCodeGeneration(g);
+		rval.attemptConstantFolding(g);
 		g.addInstruction(Machine.STORE);
 	}
 }

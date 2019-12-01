@@ -69,7 +69,7 @@ public class ReturnStmt extends Stmt {
 	@Override
 	public void performCodeGeneration(CodeGen g) {
 		if(value != null) {
-			value.performCodeGeneration(g);
+			value.attemptConstantFolding(g);
 		}
 		g.addInstruction(Machine.PUSH);
 		g.awaitExitCode(g.getPosition());

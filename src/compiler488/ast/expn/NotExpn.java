@@ -26,7 +26,7 @@ public class NotExpn extends UnaryExpn {
     public void performCodeGeneration(CodeGen g) {
         g.addInstruction(Machine.PUSH);
         g.addInstruction(1);
-        getOperand().performCodeGeneration(g);
+        getOperand().attemptConstantFolding(g);
         g.addInstruction(Machine.SUB);
     }
 

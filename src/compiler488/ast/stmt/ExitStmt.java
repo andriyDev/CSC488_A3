@@ -92,7 +92,7 @@ public class ExitStmt extends Stmt {
 	public void performCodeGeneration(CodeGen g) {
 		int addressAfterExit = 0;
 		if(expn != null) {
-			expn.performCodeGeneration(g);
+			expn.attemptConstantFolding(g);
 			g.addInstruction(Machine.PUSH);
 			addressAfterExit = g.getPosition();
 			g.addInstruction(0); // Temporary slot

@@ -23,7 +23,7 @@ public class UnaryMinusExpn extends UnaryExpn {
 
     @Override
     public void performCodeGeneration(CodeGen g) {
-        getOperand().performCodeGeneration(g);
+        getOperand().attemptConstantFolding(g);
         g.addInstruction(Machine.NEG);
     }
 

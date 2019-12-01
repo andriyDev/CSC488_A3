@@ -37,8 +37,8 @@ public class ArithExpn extends BinaryExpn {
 
     @Override
     public void performCodeGeneration(CodeGen g) {
-        left.performCodeGeneration(g);
-        right.performCodeGeneration(g);
+        left.attemptConstantFolding(g);
+        right.attemptConstantFolding(g);
         switch (opSymbol) {
             case OP_PLUS:
                 g.addInstruction(Machine.ADD);

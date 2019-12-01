@@ -33,8 +33,8 @@ public class BoolExpn extends BinaryExpn {
 
     @Override
     public void performCodeGeneration(CodeGen g) {
-        left.performCodeGeneration(g);
-        right.performCodeGeneration(g);
+        left.attemptConstantFolding(g);
+        right.attemptConstantFolding(g);
         switch (opSymbol) {
             case OP_AND:
                 g.addInstruction(Machine.ADD);

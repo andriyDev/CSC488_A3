@@ -86,7 +86,7 @@ public class SubsExpn extends Expn implements Readable {
 		g.addInstruction(Machine.ADDR);
 		g.addInstruction(p.getKey());
 		g.addInstruction(p.getValue());
-		subscript1.performCodeGeneration(g);
+		subscript1.attemptConstantFolding(g);
 		if(sym.bounds.minX != 0) {
 			g.addInstruction(Machine.PUSH);
 			g.addInstruction(sym.bounds.minX);
@@ -97,7 +97,7 @@ public class SubsExpn extends Expn implements Readable {
 			// Stride of dimension 2
 			g.addInstruction(sym.bounds.maxY - sym.bounds.minY + 1);
 			g.addInstruction(Machine.MUL);
-			subscript2.performCodeGeneration(g);
+			subscript2.attemptConstantFolding(g);
 			if (sym.bounds.minY != 0) {
 				g.addInstruction(Machine.PUSH);
 				g.addInstruction(sym.bounds.minY);

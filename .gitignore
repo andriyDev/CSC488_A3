@@ -4,3 +4,6 @@ lib/
 *.iml
 .idea/
 dist/
+src/compiler488/parser/BaseParser.java
+src/compiler488/parser/Lexer.java
+src/compiler488/parser/sym.java

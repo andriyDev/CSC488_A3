@@ -63,19 +63,27 @@ public class ConditionalExpn extends Expn {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
-		condition.performCodeGeneration(g);
-		g.addInstruction(Machine.PUSH);
-		int addrOfFalseExprFillIn = g.getPosition();
-		g.addInstruction(0); // Temporary to be filled in later
-		g.addInstruction(Machine.BF);
-		trueValue.performCodeGeneration(g);
-		g.addInstruction(Machine.PUSH);
-		int addrOfAfterFalseExprFillIn = g.getPosition();
-		g.addInstruction(0); // Temporary to be filled in later
-		g.addInstruction(Machine.BR);
-		g.setInstruction(addrOfFalseExprFillIn, g.getPosition()); // Fill in the address
-		falseValue.performCodeGeneration(g);
-		g.setInstruction(addrOfAfterFalseExprFillIn, g.getPosition()); // Fill in the address
+		if(condition.getCachedIsConstant()) {
+			if(condition.getCachedConstantValue() == 1) {
+				trueValue.attemptConstantFolding(g);
+			} else {
+				falseValue.attemptConstantFolding(g);
+			}
+		} else {
+			condition.performCodeGeneration(g);
+			g.addInstruction(Machine.PUSH);
+			int addrOfFalseExprFillIn = g.getPosition();
+			g.addInstruction(0); // Temporary to be filled in later
+			g.addInstruction(Machine.BF);
+			trueValue.attemptConstantFolding(g);
+			g.addInstruction(Machine.PUSH);
+			int addrOfAfterFalseExprFillIn = g.getPosition();
+			g.addInstruction(0); // Temporary to be filled in later
+			g.addInstruction(Machine.BR);
+			g.setInstruction(addrOfFalseExprFillIn, g.getPosition()); // Fill in the address
+			falseValue.attemptConstantFolding(g);
+			g.setInstruction(addrOfAfterFalseExprFillIn, g.getPosition()); // Fill in the address
+		}
 	}
 
 	@Override

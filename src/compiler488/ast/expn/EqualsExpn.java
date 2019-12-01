@@ -36,8 +36,8 @@ public class EqualsExpn extends BinaryExpn {
             g.addInstruction(Machine.PUSH);
             g.addInstruction(1);
         }
-        left.performCodeGeneration(g);
-        right.performCodeGeneration(g);
+        left.attemptConstantFolding(g);
+        right.attemptConstantFolding(g);
         g.addInstruction(Machine.EQ);
 
         if(opSymbol == OP_NOT_EQUAL) {

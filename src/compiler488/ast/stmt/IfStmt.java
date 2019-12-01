@@ -88,7 +88,15 @@ public class IfStmt extends Stmt {
 
 	@Override
 	public void performCodeGeneration(CodeGen g) {
-		condition.performCodeGeneration(g);
+		if(condition.getCachedIsConstant()) {
+			if(condition.getCachedConstantValue() == 1) {
+				whenTrue.performCodeGeneration(g);
+			} else {
+				whenFalse.performCodeGeneration(g);
+			}
+			return;
+		}
+		condition.attemptConstantFolding(g);
 		g.addInstruction(Machine.PUSH);
 		int addressOfElseBlock = g.getPosition();
 		g.addInstruction(0); // Temporary slot for the else address

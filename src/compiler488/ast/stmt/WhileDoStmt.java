@@ -37,6 +37,6 @@ public class WhileDoStmt extends LoopingStmt {
 
 	@Override
 	public void generateConditionCheck(CodeGen g) {
-		expn.performCodeGeneration(g);
+		expn.attemptConstantFolding(g);
 	}
 }

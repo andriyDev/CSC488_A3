@@ -59,7 +59,7 @@ public class WriteStmt extends Stmt {
 						g.addInstruction(Machine.PRINTC);
 					}
 				} else {
-					((Expn)element).performCodeGeneration(g);
+					((Expn)element).attemptConstantFolding(g);
 					g.addInstruction(Machine.PRINTI);
 				}
 			} // We don't know what to do otherwise

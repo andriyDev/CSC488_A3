@@ -88,7 +88,7 @@ public class ProcedureCallStmt extends Stmt {
 		g.addInstruction(0); // Space for static link
 		// Parameters
 		for(Expn ex : arguments) {
-			ex.performCodeGeneration(g);
+			ex.attemptConstantFolding(g);
 		}
 		g.addInstruction(Machine.PUSH);
 		int routineAddress = g.getRoutineAddress(g.getCurrentScope().getSymbol(name), g.getPosition());

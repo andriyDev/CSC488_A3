@@ -38,26 +38,26 @@ public class CompareExpn extends BinaryExpn {
     @Override
     public void performCodeGeneration(CodeGen g) {
         if (opSymbol == OP_LESS) {
-            left.performCodeGeneration(g);
-            right.performCodeGeneration(g);
+            left.attemptConstantFolding(g);
+            right.attemptConstantFolding(g);
             g.addInstruction(Machine.LT);
         } else if(opSymbol == OP_GREATER_EQUAL) {
             g.addInstruction(Machine.PUSH);
             g.addInstruction(1);
-            left.performCodeGeneration(g);
-            right.performCodeGeneration(g);
+            left.attemptConstantFolding(g);
+            right.attemptConstantFolding(g);
             g.addInstruction(Machine.LT);
             g.addInstruction(Machine.SUB);
         } else if(opSymbol == OP_GREATER) {
-            left.performCodeGeneration(g);
-            right.performCodeGeneration(g);
+            left.attemptConstantFolding(g);
+            right.attemptConstantFolding(g);
             g.addInstruction(Machine.SWAP);
             g.addInstruction(Machine.LT);
         } else if(opSymbol == OP_LESS_EQUAL) {
             g.addInstruction(Machine.PUSH);
             g.addInstruction(1);
-            left.performCodeGeneration(g);
-            right.performCodeGeneration(g);
+            left.attemptConstantFolding(g);
+            right.attemptConstantFolding(g);
             g.addInstruction(Machine.SWAP);
             g.addInstruction(Machine.LT);
             g.addInstruction(Machine.SUB);

@@ -40,7 +40,7 @@ public class RepeatUntilStmt extends LoopingStmt {
 	public void generateConditionCheck(CodeGen g) {
 		g.addInstruction(Machine.PUSH);
 		g.addInstruction(1);
-		expn.performCodeGeneration(g);
+		expn.attemptConstantFolding(g);
 		g.addInstruction(Machine.SUB);
 	}
 }

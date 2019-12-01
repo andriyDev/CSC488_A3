@@ -17,9 +17,9 @@ public abstract class Expn extends BaseAST implements Printable {
     public short computeConstant() { throw new RuntimeException("This expression is not constant!"); }
 
      public void attemptConstantFolding(CodeGen g) {
-        if(isConstant()) {
+        if(getCachedIsConstant()) {
             g.addInstruction(Machine.PUSH);
-            g.addInstruction(computeConstant());
+            g.addInstruction(getCachedConstantValue());
         } else {
             performCodeGeneration(g);
         }
