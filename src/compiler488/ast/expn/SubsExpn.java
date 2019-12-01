@@ -85,27 +85,47 @@ public class SubsExpn extends Expn implements Readable {
 		Pair<Integer, Integer> p = g.getCurrentScope().getSymbolLocation(variable);
 		g.addInstruction(Machine.ADDR);
 		g.addInstruction(p.getKey());
-		g.addInstruction(p.getValue());
-		subscript1.attemptConstantFolding(g);
-		if(sym.bounds.minX != 0) {
-			g.addInstruction(Machine.PUSH);
-			g.addInstruction(sym.bounds.minX);
-			g.addInstruction(Machine.SUB);
+
+		int offset = 0;
+		if(subscript1.getCachedIsConstant()) {
+			offset = subscript1.getCachedConstantValue() - sym.bounds.minX;
+			if(subscript2 != null) {
+				offset *= sym.bounds.maxY - sym.bounds.minY + 1;
+			}
 		}
-		if(subscript2 != null) {
-			g.addInstruction(Machine.PUSH);
-			// Stride of dimension 2
-			g.addInstruction(sym.bounds.maxY - sym.bounds.minY + 1);
-			g.addInstruction(Machine.MUL);
-			subscript2.attemptConstantFolding(g);
-			if (sym.bounds.minY != 0) {
+		if(subscript2 != null && subscript2.getCachedIsConstant()) {
+			offset += subscript2.getCachedConstantValue() - sym.bounds.minY;
+		}
+		g.addInstruction(p.getValue() + offset);
+
+		if(!subscript1.getCachedIsConstant()) {
+			subscript1.attemptConstantFolding(g);
+			if (sym.bounds.minX != 0) {
 				g.addInstruction(Machine.PUSH);
-				g.addInstruction(sym.bounds.minY);
+				g.addInstruction(sym.bounds.minX);
 				g.addInstruction(Machine.SUB);
 			}
+		}
+		if(subscript2 != null) {
+			if(!subscript1.getCachedIsConstant()) {
+				g.addInstruction(Machine.PUSH);
+				// Stride of dimension 2
+				g.addInstruction(sym.bounds.maxY - sym.bounds.minY + 1);
+				g.addInstruction(Machine.MUL);
+			}
+			if(!subscript2.getCachedIsConstant()) {
+				subscript2.attemptConstantFolding(g);
+				if (sym.bounds.minY != 0) {
+					g.addInstruction(Machine.PUSH);
+					g.addInstruction(sym.bounds.minY);
+					g.addInstruction(Machine.SUB);
+				}
+				g.addInstruction(Machine.ADD);
+			}
+		}
+		if(!subscript1.getCachedIsConstant()) {
 			g.addInstruction(Machine.ADD);
 		}
-		g.addInstruction(Machine.ADD);
 	}
 
 	@Override
