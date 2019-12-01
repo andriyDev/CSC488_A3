@@ -5,6 +5,8 @@ import compiler488.codegen.CodeGen;
 import compiler488.runtime.Machine;
 import compiler488.semantics.Semantics;
 
+import javax.crypto.Mac;
+
 /**
  * Place holder for all binary expression where both operands must be integer
  * expressions.
@@ -37,6 +39,51 @@ public class ArithExpn extends BinaryExpn {
 
     @Override
     public void performCodeGeneration(CodeGen g) {
+        boolean leftIsConstant = left.getCachedIsConstant();
+        boolean rightIsConstant = right.getCachedIsConstant();
+        short leftValue = leftIsConstant ? left.getCachedConstantValue() : 0;
+        short rightValue = rightIsConstant ? right.getCachedConstantValue() : 0;
+
+        // Algebraic simplification
+        if(leftIsConstant || rightIsConstant) {
+            switch (opSymbol) {
+                case OP_PLUS:
+                    if(leftIsConstant && leftValue == 0) {
+                        right.attemptConstantFolding(g);
+                        return;
+                    } else if (rightIsConstant && rightValue == 0) {
+                        left.attemptConstantFolding(g);
+                        return;
+                    }
+                    break;
+                case OP_MINUS:
+                    if(leftIsConstant && leftValue == 0) {
+                        right.attemptConstantFolding(g);
+                        g.addInstruction(Machine.NEG);
+                        return;
+                    } else if (rightIsConstant && rightValue == 0) {
+                        left.attemptConstantFolding(g);
+                        return;
+                    }
+                    break;
+                case OP_TIMES:
+                    if(leftIsConstant && leftValue == 1) {
+                        right.attemptConstantFolding(g);
+                        return;
+                    } else if (rightIsConstant && rightValue == 1) {
+                        left.attemptConstantFolding(g);
+                        return;
+                    }
+                    break;
+                case OP_DIVIDE:
+                    if (rightIsConstant && rightValue == 1) {
+                        left.attemptConstantFolding(g);
+                        return;
+                    }
+                    break;
+            }
+        }
+
         left.attemptConstantFolding(g);
         right.attemptConstantFolding(g);
         switch (opSymbol) {
